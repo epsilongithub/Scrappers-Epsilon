@@ -13,9 +13,9 @@
 
 	require_once('vendor/autoload.php');
 
-	const EXTRA = "AND pro.id = 32922 ";
-	$fecha_ini = "2020-12-08 ";
-	$fecha_fi = "2020-12-20 ";
+	const EXTRA = "AND pro.id = 32922";
+	$fecha_ini = "2020-12-08";
+	$fecha_fi = "2020-12-20";
 
 
 	const LOGIN_URL = 'https://www.instagram.com/accounts/login/';
