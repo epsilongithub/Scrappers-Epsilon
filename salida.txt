@@ -1,4 +1,4 @@
-Conjunto de caracteres actual: utf8
+Cconjunto de caracteres actual: utf8
 Voy a loggearme por primera vez 
 Scrapping https://www.pinterest.es/Womensecret/boards/...
 TENEMOS: 10 ALBUMES y voy por la ITERACION: 0
