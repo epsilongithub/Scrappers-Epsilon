@@ -945,7 +945,20 @@
 		$sql = "SELECT * from scrapper_maquinas where ip_maquina = '".$local_ip."'";
 		echo "IP: ".$sql;
 		$queryResult = $db->query($sql);
+		if($queryResult->num_rows < 1){
+			echo "\nNO EXISTE LA MAQUINA. VAMOS A REGISTRARLA\n";
+			$sql = "insert into scrapper_maquinas VALUES(NULL,'$local_ip')";
 
+			if(!$db->query($sql)) {
+				echo "Error updating en la base de datos\n";
+				echo "ERROR: ", $db->error, "\n";
+			}
+
+			$sql = "SELECT * from scrapper_maquinas where ip_maquina = '".$local_ip."'";
+			$queryResult = $db->query($sql);
+			echo "\nHEMOS REGISTRADO YA LA MAQUINA CON EXITO.\n";
+		}
+		
 		foreach ($queryResult as $r) {
 			$ip = $r["id"];
 		}
