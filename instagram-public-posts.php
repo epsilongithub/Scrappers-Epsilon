@@ -264,7 +264,7 @@
 					echo "CONSULTA --> $sql\n";
 				}
 
-				echo "\YA HEMOS PARA ACTUALIZAR EL LOG CON ESTE PERFIL\n";
+				echo "\YA HEMOS ACTUALIZADO EL LOG CON ESTE PERFIL\n";
 
 			}
 
