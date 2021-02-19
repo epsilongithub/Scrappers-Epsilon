@@ -334,6 +334,7 @@
 					$datetime = $divtime->getAttribute("datetime");
 					date_default_timezone_set('Europe/Madrid');
 					$dateres = date('Y-m-d H:i:s', strtotime($datetime));		
+					$date = new DateTime($dateres);
 					$idExterno = $date->getTimestamp();
 
 					global $fecha_fi, $fecha_ini;
