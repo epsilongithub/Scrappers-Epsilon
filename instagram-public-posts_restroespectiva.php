@@ -68,6 +68,8 @@
 	const BAN_CLASS = 'vqibd  wNNoj ';
 	const TABLA_NOCTURNA_CONTENT = 'instagram_icarus_contents';
 
+	date_default_timezone_set('Europe/Madrid');
+
 	/*
 	Clase para almacenar la informacion relativa a un post.
 	*/
@@ -92,7 +94,7 @@
 			$this->msg = $msg;
 			$this->img = $img;
 			$this->type = $type;
-			$this->date = $date;
+			$this->date = date('Y-m-d H:i:s', strtotime($date));
 		}
 
 		function toString() {
@@ -424,8 +426,8 @@
 
 					$divtime = $this->driver->findElement(WebDriverBy::cssSelector("time[class='".POST_DATETIME."']"));
 					$datetime = $divtime->getAttribute("datetime");
-					$date = new DateTime($datetime);
-					$dateres = $date->format('Y-m-d H:i:s');
+					date_default_timezone_set('Europe/Madrid');
+					$dateres = date('Y-m-d H:i:s', strtotime($datetime));
 					$idExterno = $date->getTimestamp();
 					global $fecha_fi, $fecha_ini;
 					$datefinal = $fecha_fi.' 23:59:59';
@@ -804,12 +806,9 @@
 				$likesAntiguos = $this->searchLikes($linkecito);
 				$likesScrap = $p->getNumLikes();
 
-				echo "url: ".$linkecito."\n";
+				echo "url: ".$linkecito."\n";				
 				echo "banderita: ".$banderita."\n";
-				echo "Likes Anteriores: ".$likesAntiguos." | Likes Actuales: ".$likesScrap."\n";
-
-
-
+				echo "Likes Anteriores: ".$likesAntiguos." | Likes Actuales: ".$likesScrap."\n";				
 
 				if($likesAntiguos > $likesScrap){
 					$likesFinales = $likesAntiguos; 
@@ -817,19 +816,16 @@
 					$likesFinales = $likesScrap;
 				}	
 
-
 				if($banderita == true){
 
 					//$insertQuery = "UPDATE `instagram_icarus_contents` SET `likes` = ".$p->getNumLikes().", `campo_8` = ".$p->getNumLikes().", `campo_7` = ".$p->getNumViews().", `comments` = ".$p->getNumComments().", `actualizacion` = now() WHERE `link` = '".$linkecito."'";
 					$insertQuery = "UPDATE `".TABLA_ICARUS_CONTENT."` SET `likes` = ".$likesFinales.", `campo_7` = ".$p->getNumViews().", `comments` = ".$p->getNumComments().", `actualizacion` = now() WHERE `link` = '".$linkecito."'";
 				
-				}else{
-
+				}else{											
 					$insertQuery = "REPLACE INTO `".TABLA_ICARUS_CONTENT."`(`id_profile`, `pageName`, `createTime`, `message`, `link`, `likes`, `campo_8`, `campo_7`, `comments`, `id_externo`, `image`, `type`, `actualizacion`)
 															VALUES (".$id.", '".$url."', '".$p->getFecha()."', '".addslashes(utf8_encode($p->getMsg()))."', '".$p->getLink()."', ".$likesFinales.", ".$likesFinales.", ".$p->getNumViews().", ".$p->getNumComments().", '".$p->getIdExterno()."', '".$p->getImg()."', '".$p->getTipo()."', NOW())"; //(addslashes($p->getMsg()))
-
 				}
-				echo 'INSERTANDO ', $p->getIdExterno(), "\n";
+				echo 'INSERTANDO ', $p->getIdExterno(), "\n"; 
 				echo $insertQuery."\n";
 				
 				if(!$this->db->query($insertQuery)) {

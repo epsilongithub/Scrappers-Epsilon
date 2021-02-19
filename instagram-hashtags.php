@@ -329,14 +329,11 @@
 					
 					$this->randomSleep();
 					$this->randomSleep();
+					
 					$divtime = $this->driver->findElement(WebDriverBy::cssSelector("time[class='".POST_DATETIME."']"));
-					
 					$datetime = $divtime->getAttribute("datetime");
-
-					$date = new DateTime($datetime);
-					
-					//$dateres = $date->format('Y-m-d');
-					$dateres = $date->format('Y-m-d H:i:s');
+					date_default_timezone_set('Europe/Madrid');
+					$dateres = date('Y-m-d H:i:s', strtotime($datetime));		
 					$idExterno = $date->getTimestamp();
 
 					global $fecha_fi, $fecha_ini;
