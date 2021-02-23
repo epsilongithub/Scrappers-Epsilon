@@ -246,7 +246,7 @@
 			$local_ip = getHostByName(getHostName());
 
 			if($accion == 0){
-				echo "\nENTRAMOS PARA INSERTAR UN NUEVO LOG CON ESTE PERFIL \n";
+				echo "\nENTRAMOS PARA INSERTAR UN NUEVO LOG CON ESTE PERFIL\n";
 				$fecha_ini = date("Y-m-d H:i:s");
 				$sql = "INSERT INTO ".TABLA_LOG." VALUES(NULL,$id,$id_maquina,'$fecha_ini','','','INICIAMOS EL PERFIL $id EN LA MAQUINA $local_ip',1)";
 
