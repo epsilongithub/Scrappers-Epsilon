@@ -275,7 +275,7 @@
 				if(!$this->db->query($sql)) {
 					echo "Error updating en la base de datos\n";
 					echo "ERROR: ", $this->db->error, "\n";
-					return 1;
+					//return 1;
 				}ELSE{
 					echo "CONSULTA --> $sql\n";
 				}
@@ -865,7 +865,7 @@
 			echo "banderita: ".$banderita."\n";
 			echo "Likes Anteriores: ".$likesAntiguos." | Likes Actuales: ".$likesScrap."\n";
 			echo "Hora del post: ".$p->getFecha();				
-			exit;
+			//exit;
 
 
 			if(strpos($likesScrap, 'k') !== false){
