@@ -444,7 +444,7 @@
 						break;
 					}
 					else if($dateres > $datefinal){
-						echo "AUN NO HA LLEGADO A LA FECHA\n";
+						echo "AUN NO HA LLEGADO A LA FECHA \n";
 						//CERRAR POST
 						$this->driver->findElement(WebDriverBy::cssSelector("svg[aria-label='Cerrar']"))->click();
 						continue;
