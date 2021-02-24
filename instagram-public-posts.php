@@ -65,9 +65,11 @@
 	const TABLA_ICARUS_CONTENT = 'instagram_icarus_contents';
 	const TABLA_ICARUS_BRAND = 'instagram_icarus_brand_datos';
 	const TABLA_COLAS = 'instagram_paid_cola';
+	const TABLA_LOG = 'scrapper_ig_log_profiles';
 	const BAN_CLASS = 'vqibd  wNNoj ';
 
-	
+	date_default_timezone_set('Europe/Madrid');
+
 	/*
 	Clase para almacenar la informacion relativa a un post.
 	*/
@@ -92,7 +94,7 @@
 			$this->msg = $msg;
 			$this->img = $img;
 			$this->type = $type;
-			$this->date = $date;
+			$this->date = date('Y-m-d H:i:s', strtotime($date));
 		}
 
 		function toString() {
@@ -195,6 +197,7 @@
 					echo 'Scrapping ', $urlindiv ,"...\n"; 
 					$this->getFechasCargas($id);
 
+					$id_log = $this->insertLog($id,$id_maquina,0,0);
 					$urlprofile = "https://www.instagram.com/".$urlindiv;
 					$posts = array();
 
@@ -222,6 +225,7 @@
 
 					$this->syncBrandByProfile($id);
 					$this->borrarCola($id);
+					$this->insertLog($id,$id_maquina,1,$id_log);
 				}
 				//$this->syncBrandByContent();
 			}
@@ -230,6 +234,56 @@
 			}
 			$this->desbloquearUsuario($id_user,$user,$passwd);
 			$this->logout();
+		}
+
+		function insertLog($id,$id_maquina,$accion,$id_log){
+			/****
+				$id --> id del perfil
+				$id_maquina --> id de la maquina
+				$accion --> si es un insert(0) o un update(1)
+				$id_log --> en el caso que sea una actualizacion tendra el id del log que se ha insertado anteriormente, si es un insert siempre sera 0
+			****/
+			$local_ip = getHostByName(getHostName());
+
+			if($accion == 0){
+				echo "\nENTRAMOS PARA INSERTAR UN NUEVO LOG CON ESTE PERFIL\n";
+				$fecha_ini = date("Y-m-d H:i:s");
+				$sql = "INSERT INTO ".TABLA_LOG." VALUES(NULL,$id,$id_maquina,'$fecha_ini','','','INICIAMOS EL PERFIL $id EN LA MAQUINA $local_ip',1)";
+
+				if(!$this->db->query($sql)) {
+					echo "Error updating en la base de datos\n";
+					echo "ERROR: ", $this->db->error, "\n";
+					return 1;
+				}ELSE{
+					echo "CONSULTA --> $sql\n";
+				}
+				$sql = "SELECT max(id) as 'max_id' FROM ".TABLA_LOG;
+				$queryResult = $this->db->query($sql);
+				foreach ($queryResult as $valor) {
+					$id_log = $valor["max_id"];
+				}
+				echo "YA HEMOS INTRODUCIDO UN LOG PARA ESTE PERFIL\n";
+				return $id_log;
+			}
+			if($accion == 1){
+				$fecha_fin = date("Y-m-d H:i:s");
+				if($id_log == 0){
+					echo "\nHA HABIDO UN ERROR OBTENIENDO EL ID DEL LOG\n";
+				}
+				echo "\nENTRAMOS PARA ACTUALIZAR EL LOG CON ESTE PERFIL\n";
+				$sql = "update ".TABLA_LOG." set fecha_fin='$fecha_fin',duracion=timediff(fecha_fin,fecha_ini),descripcion='FINALIZAMOS EL PERFIL $id EN LA MAQUINA $local_ip' where id=$id_log";
+				if(!$this->db->query($sql)) {
+					echo "Error updating en la base de datos\n";
+					echo "ERROR: ", $this->db->error, "\n";
+					//return 1;
+				}ELSE{
+					echo "CONSULTA --> $sql\n";
+				}
+
+				echo "\YA HEMOS PARA ACTUALIZAR EL LOG CON ESTE PERFIL\n";
+
+			}
+
 		}
 
 		function desbloquearUsuario($id_user,$user,$passwd){
@@ -810,7 +864,10 @@
 			echo "url: ".$linkecito."\n";
 			echo "banderita: ".$banderita."\n";
 			echo "Likes Anteriores: ".$likesAntiguos." | Likes Actuales: ".$likesScrap."\n";
-			
+			echo "Hora del post: ".$p->getFecha();				
+			//exit;
+
+
 			if(strpos($likesScrap, 'k') !== false){
 				$likesScrap = str_replace("k", "", $likesScrap);
 				$likesScrap2 = explode(',', $likesScrap);
@@ -906,6 +963,19 @@
 		$sql = "SELECT * from scrapper_maquinas where ip_maquina = '".$local_ip."'";
 		echo "IP: ".$sql;
 		$queryResult = $db->query($sql);
+		if($queryResult->num_rows < 1){
+			echo "\nNO EXISTE LA MAQUINA. VAMOS A REGISTRARLA\n";
+			$sql = "insert into scrapper_maquinas VALUES(NULL,'$local_ip')";
+
+			if(!$db->query($sql)) {
+				echo "Error updating en la base de datos\n";
+				echo "ERROR: ", $db->error, "\n";
+			}
+
+			$sql = "SELECT * from scrapper_maquinas where ip_maquina = '".$local_ip."'";
+			$queryResult = $db->query($sql);
+			echo "\nHEMOS REGISTRADO YA LA MAQUINA CON EXITO.\n";
+		}
 
 		foreach ($queryResult as $r) {
 			$ip = $r["id"];
