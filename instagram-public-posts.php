@@ -227,7 +227,6 @@
 					$this->borrarCola($id);
 					$this->insertLog($id,$id_maquina,1,$id_log);
 				}
-				//$this->syncBrandByContent();
 			}
 
 			$this->Sleep_alograndre();		
@@ -280,7 +279,7 @@
 					echo "CONSULTA --> $sql\n";
 				}
 
-				echo "\YA HEMOS PARA ACTUALIZAR EL LOG CON ESTE PERFIL\n";
+				echo "YA HEMOS ACTUALIZADO EL LOG CON ESTE PERFIL\n";
 
 			}
 
@@ -729,50 +728,6 @@
 		}
 		
 
-		function syncBrandByContent(){
-
-			global $fecha_fi, $fecha_ini;
-
-			//$hoy = date('Y-m-d');
-			//$ayer = date ( 'Y-m-d' , strtotime ( '-1 day' , strtotime ( $hoy ) ) ); 
-			//$ayer = '2020-11-01';
-			$ayer = $fecha_ini;
-
-			$profilesToUpdate = "SELECT DISTINCT c.id_profile FROM ".TABLA_ICARUS_CONTENT." AS c, icarus_profiles AS pro, icarus_brand_plantillas AS pla, empresas AS e
-						WHERE pro.id_plataforma=21 AND c.id_profile=pro.id AND pla.id_profile=pro.id AND pla.id_cliente=e.id AND (c.type LIKE 'video' OR c.type LIKE 'photo') AND c.createTime >='".$ayer." 00:00:00'";  //AND pro.mayor18=1
-			//echo "select profiles to update brand: ".$profilesToUpdate."<br>"; 
-			$queryResult = $this->db->query($profilesToUpdate);
-
-			foreach ($queryResult as $r) {
-				$id_profile = $r['id_profile'];
-
-				$sql_ig = "SELECT SUM(likes) as likes, SUM(comments) as com, SUM(shares) as shares, COUNT(*) as post, date(createTime) as fecha
-					FROM ".TABLA_ICARUS_CONTENT." WHERE id_profile='".$id_profile."' AND type NOT LIKE 'st - %' AND createTime>='".$ayer." 00:00:00' GROUP BY DATE(createTime)";
-				//echo "select sum interacciones: ".$sql_ig."<br>"; 
-				$datos_ig = $this->db->query($sql_ig);
-				
-				foreach ($datos_ig as $s) {
-					//print_r($s); exit; 
-					$likes = $comments = $shares = $posts = 0;
-					$fechaAct = $s['fecha'];
-
-					if($s['likes']>0) $likes = $s['likes'];
-					if($s['com']>0) $comments = $s['com'];
-					if($s['shares']>0) $shares = $s['shares'];
-					if($s['post']>0) $posts = $s['post'];
-					
-					$modif_brand = "UPDATE ".TABLA_ICARUS_BRAND." SET eficiencia='".$posts."', valor2='".$likes."', valor3='".$comments."', valor4='".$posts."', impacto=(valor6+valor2+valor3), actualizacion=NOW() WHERE id_profile= '".$id_profile."' AND  fecha LIKE '".$fechaAct."'";
-					//echo $modif_brand."\n"; //exit;
-					echo "HECHO EL UPDATE";
-					if(!$this->db->query($modif_brand)) {
-						echo "Error updating en la base de datos\n";
-						echo "ERROR: ", $this->db->error, "\n";
-					}
-					
-				}
-			}
-		}
-
 		function syncBrandByProfile($id_profile){
 
 			global $fecha_fi, $fecha_ini;
@@ -794,13 +749,33 @@
 				if($s['shares']>0) $shares = $s['shares'];
 				if($s['post']>0) $posts = $s['post'];
 				
-				$modif_brand = "UPDATE ".TABLA_ICARUS_BRAND." SET eficiencia='".$posts."', valor2='".$likes."', valor3='".$comments."', valor4='".$posts."', impacto=(valor6+valor2+valor3), actualizacion=NOW() 
+				$sel_brand_existe = "SELECT * FROM ".TABLA_ICARUS_BRAND." WHERE id_profile= '".$id_profile."' AND fecha LIKE '".$fechaAct."'";
+				$res_brand_existe = $this->db->query($sel_brand_existe);
+
+				if ($res_brand_existe->num_rows() > 0) {
+					$q_brand = "UPDATE ".TABLA_ICARUS_BRAND." SET eficiencia='".$posts."', valor2='".$likes."', valor3='".$comments."', valor4='".$posts."', impacto=(valor6+valor2+valor3), actualizacion=NOW() WHERE id_profile= '".$id_profile."' AND  fecha LIKE '".$fechaAct."'";
+					$texto = "ACTUALIZACION";
+				}
+				else {
+					$q_brand = "INSERT INTO ".TABLA_ICARUS_BRAND." (id_profile, fecha, valor2, valor3, valor4, impacto, actualizacion) 
+							VALUES ('".$id_profile."', '".$fechaAct."', '".$likes."', '".$comments."', '".$posts."', (valor6+valor2+valor3), NOW())";
+					$texto = "INSERCION";
+				}
+
+				echo "BRAND $texto: ".$q_brand."\n";
+				if(!$this->db->query($q_brand)) {
+					echo "Error updating en la base de datos\n";
+					echo "ERROR: ", $this->db->error, "\n";
+				}
+
+
+				/*$modif_brand = "UPDATE ".TABLA_ICARUS_BRAND." SET eficiencia='".$posts."', valor2='".$likes."', valor3='".$comments."', valor4='".$posts."', impacto=(valor6+valor2+valor3), actualizacion=NOW() 
 									WHERE id_profile= '".$id_profile."' AND  fecha LIKE '".$fechaAct."'";
 				echo $modif_brand."\n"; //exit;				
 				if(!$this->db->query($modif_brand)) {
 					echo "Error updating en la base de datos\n";
 					echo "ERROR: ", $this->db->error, "\n";
-				}
+				}*/
 			}
 		}
 
@@ -990,7 +965,6 @@
 		$driver->manage()->window()->maximize();
 		$scraper = new InstagramScraper($db, $driver);
 		$scraper->run($id_maquina);
-		//$scraper->syncBrandByContent();
 		$driver->close();
 
 	} catch (Exception $e) {
