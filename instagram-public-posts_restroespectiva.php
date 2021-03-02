@@ -196,6 +196,7 @@
 					echo 'Scrapping ', $urlindiv ,"...\n"; 
 					$this->getFechasCargas($id);
 
+					$id_log = $this->insertLog($id,$id_maquina,0,0);
 					$urlprofile = "https://www.instagram.com/".$urlindiv;
 					$posts = array();
 
@@ -224,6 +225,7 @@
 
 					$this->syncBrandByProfile($id);
 					$this->borrarCola($id);
+					$this->insertLog($id,$id_maquina,1,$id_log);
 				}
 				//$this->syncBrandByContent();
 			}
@@ -232,6 +234,56 @@
 			}
 			$this->desbloquearUsuario($id_user,$user,$passwd);
 			$this->logout();
+		}
+
+		function insertLog($id,$id_maquina,$accion,$id_log){
+			/****
+				$id --> id del perfil
+				$id_maquina --> id de la maquina
+				$accion --> si es un insert(0) o un update(1)
+				$id_log --> en el caso que sea una actualizacion tendra el id del log que se ha insertado anteriormente, si es un insert siempre sera 0
+			****/
+			$local_ip = getHostByName(getHostName());
+
+			if($accion == 0){
+				echo "\nENTRAMOS PARA INSERTAR UN NUEVO LOG CON ESTE PERFIL\n";
+				$fecha_ini = date("Y-m-d H:i:s");
+				$sql = "INSERT INTO ".TABLA_LOG." VALUES(NULL,$id,$id_maquina,'$fecha_ini','','','INICIAMOS EL PERFIL $id EN LA MAQUINA $local_ip',2)";
+
+				if(!$this->db->query($sql)) {
+					echo "Error updating en la base de datos\n";
+					echo "ERROR: ", $this->db->error, "\n";
+					return 1;
+				}ELSE{
+					echo "CONSULTA --> $sql\n";
+				}
+				$sql = "SELECT max(id) as 'max_id' FROM ".TABLA_LOG;
+				$queryResult = $this->db->query($sql);
+				foreach ($queryResult as $valor) {
+					$id_log = $valor["max_id"];
+				}
+				echo "YA HEMOS INTRODUCIDO UN LOG PARA ESTE PERFIL\n";
+				return $id_log;
+			}
+			if($accion == 1){
+				$fecha_fin = date("Y-m-d H:i:s");
+				if($id_log == 0){
+					echo "\nHA HABIDO UN ERROR OBTENIENDO EL ID DEL LOG\n";
+				}
+				echo "\nENTRAMOS PARA ACTUALIZAR EL LOG CON ESTE PERFIL\n";
+				$sql = "update ".TABLA_LOG." set fecha_fin='$fecha_fin',duracion=timediff(fecha_fin,fecha_ini),descripcion='FINALIZAMOS EL PERFIL $id EN LA MAQUINA $local_ip' where id=$id_log";
+				if(!$this->db->query($sql)) {
+					echo "Error updating en la base de datos\n";
+					echo "ERROR: ", $this->db->error, "\n";
+					//return 1;
+				}ELSE{
+					echo "CONSULTA --> $sql\n";
+				}
+
+				echo "YA HEMOS ACTUALIZADO EL LOG CON ESTE PERFIL\n";
+
+			}
+
 		}
 
 		function desbloquearUsuario($id_user,$user,$passwd){
@@ -740,15 +792,18 @@
 				$sel_brand_existe = "SELECT * FROM ".TABLA_ICARUS_BRAND." WHERE id_profile= '".$id_profile."' AND fecha LIKE '".$fechaAct."'";
 				$res_brand_existe = $this->db->query($sel_brand_existe);
 
-				if ($res_brand_existe->num_rows > 0) {
-					$modif_brand = "UPDATE ".TABLA_ICARUS_BRAND." SET eficiencia='".$posts."', valor2='".$likes."', valor3='".$comments."', valor4='".$posts."', impacto=(valor6+valor2+valor3), actualizacion=NOW() WHERE id_profile= '".$id_profile."' AND  fecha LIKE '".$fechaAct."'";
+				if ($res_brand_existe->num_rows() > 0) {
+					$q_brand = "UPDATE ".TABLA_ICARUS_BRAND." SET eficiencia='".$posts."', valor2='".$likes."', valor3='".$comments."', valor4='".$posts."', impacto=(valor6+valor2+valor3), actualizacion=NOW() WHERE id_profile= '".$id_profile."' AND  fecha LIKE '".$fechaAct."'";
+					$texto = "ACTUALIZACION";
 				}
 				else {
-					$modif_brand = "INSERT INTO ".TABLA_ICARUS_BRAND." (id_profile, fecha, valor2, valor3, valor4, impacto, actualizacion) 
+					$q_brand = "INSERT INTO ".TABLA_ICARUS_BRAND." (id_profile, fecha, valor2, valor3, valor4, impacto, actualizacion) 
 							VALUES ('".$id_profile."', '".$fechaAct."', '".$likes."', '".$comments."', '".$posts."', (valor6+valor2+valor3), NOW())";
+					$texto = "INSERCION";
 				}
-				echo $modif_brand."\n"; //exit;				
-				if(!$this->db->query($modif_brand)) {
+
+				echo "BRAND $texto: ".$q_brand."\n";
+				if(!$this->db->query($q_brand)) {
 					echo "Error updating en la base de datos\n";
 					echo "ERROR: ", $this->db->error, "\n";
 				}
