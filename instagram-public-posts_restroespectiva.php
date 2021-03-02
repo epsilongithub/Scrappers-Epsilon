@@ -737,8 +737,16 @@
 				if($s['shares']>0) $shares = $s['shares'];
 				if($s['post']>0) $posts = $s['post'];
 				
-				$modif_brand = "UPDATE ".TABLA_ICARUS_BRAND." SET eficiencia='".$posts."', valor2='".$likes."', valor3='".$comments."', valor4='".$posts."', impacto=(valor6+valor2+valor3), actualizacion=NOW() 
-									WHERE id_profile= '".$id_profile."' AND  fecha LIKE '".$fechaAct."'";
+				$sel_brand_existe = "SELECT * FROM ".TABLA_ICARUS_BRAND." WHERE id_profile= '".$id_profile."' AND fecha LIKE '".$fechaAct."'";
+				$res_brand_existe = $this->db->query($sel_brand_existe);
+
+				if ($res_brand_existe->num_rows > 0) {
+					$modif_brand = "UPDATE ".TABLA_ICARUS_BRAND." SET eficiencia='".$posts."', valor2='".$likes."', valor3='".$comments."', valor4='".$posts."', impacto=(valor6+valor2+valor3), actualizacion=NOW() WHERE id_profile= '".$id_profile."' AND  fecha LIKE '".$fechaAct."'";
+				}
+				else {
+					$modif_brand = "INSERT INTO ".TABLA_ICARUS_BRAND." (id_profile, fecha, valor2, valor3, valor4, impacto, actualizacion) 
+							VALUES ('".$id_profile."', '".$fechaAct."', '".$likes."', '".$comments."', '".$posts."', (valor6+valor2+valor3), NOW())";
+				}
 				echo $modif_brand."\n"; //exit;				
 				if(!$this->db->query($modif_brand)) {
 					echo "Error updating en la base de datos\n";
@@ -809,7 +817,8 @@
 
 				echo "url: ".$linkecito."\n";				
 				echo "banderita: ".$banderita."\n";
-				echo "Likes Anteriores: ".$likesAntiguos." | Likes Actuales: ".$likesScrap."\n";				
+				echo "Likes Anteriores: ".$likesAntiguos." | Likes Actuales: ".$likesScrap."\n";
+				
 
 				if($likesAntiguos > $likesScrap){
 					$likesFinales = $likesAntiguos; 
@@ -836,7 +845,6 @@
 				}
 			}
 		}
-
 		function storePostUnique($id, $p, $url, $num){
 
        		$linkecito = $p->getLink();
