@@ -1,4 +1,5 @@
 @echo off
+timeout /t 1800
 echo /********	BUSCAMOS NUEVAS VERSIONES EN EL GIT	********/
 call "C:\Users\Tech\Documents\git_sync.bat"
 echo /********	BUSCAMOS NUEVAS VERSIONES EN EL GIT	********/
