@@ -59,6 +59,7 @@
 	const HASH_ALGORITHM = 'md5';
 
 	const BLOQUE = '1';
+	const TABLA_LOG = 'scrapper_ig_log_profiles';
 	const BAN_CLASS = 'vqibd  wNNoj ';
 
 	/*
@@ -215,6 +216,55 @@
 					
 		}
 
+		function insertLog($id,$id_maquina,$accion,$id_log){
+			/****
+				$id --> id del perfil
+				$id_maquina --> id de la maquina
+				$accion --> si es un insert(0) o un update(1)
+				$id_log --> en el caso que sea una actualizacion tendra el id del log que se ha insertado anteriormente, si es un insert siempre sera 0
+			****/
+			$local_ip = getHostByName(getHostName());
+
+			if($accion == 0){
+				echo "\nENTRAMOS PARA INSERTAR UN NUEVO LOG CON ESTE PERFIL\n";
+				$fecha_ini = date("Y-m-d H:i:s");
+				$sql = "INSERT INTO ".TABLA_LOG." VALUES(NULL,$id,$id_maquina,'$fecha_ini','','','INICIAMOS EL PERFIL $id EN LA MAQUINA $local_ip',3)";
+
+				if(!$this->db->query($sql)) {
+					echo "Error updating en la base de datos\n";
+					echo "ERROR: ", $this->db->error, "\n";
+					return 1;
+				}ELSE{
+					echo "CONSULTA --> $sql\n";
+				}
+				$sql = "SELECT max(id) as 'max_id' FROM ".TABLA_LOG;
+				$queryResult = $this->db->query($sql);
+				foreach ($queryResult as $valor) {
+					$id_log = $valor["max_id"];
+				}
+				echo "YA HEMOS INTRODUCIDO UN LOG PARA ESTE PERFIL\n";
+				return $id_log;
+			}
+			if($accion == 1){
+				$fecha_fin = date("Y-m-d H:i:s");
+				if($id_log == 0){
+					echo "\nHA HABIDO UN ERROR OBTENIENDO EL ID DEL LOG\n";
+				}
+				echo "\nENTRAMOS PARA ACTUALIZAR EL LOG CON ESTE PERFIL\n";
+				$sql = "update ".TABLA_LOG." set fecha_fin='$fecha_fin',duracion=timediff(fecha_fin,fecha_ini),descripcion='FINALIZAMOS EL PERFIL $id EN LA MAQUINA $local_ip' where id=$id_log";
+				if(!$this->db->query($sql)) {
+					echo "Error updating en la base de datos\n";
+					echo "ERROR: ", $this->db->error, "\n";
+					//return 1;
+				}ELSE{
+					echo "CONSULTA --> $sql\n";
+				}
+
+				echo "YA HEMOS ACTUALIZADO EL LOG CON ESTE PERFIL\n";
+
+			}
+
+		}
 		function borrarCola($id){
 
 			echo $id."QUE TE VOY A BORRARRR\n";
@@ -431,7 +481,7 @@
 				$datetime = $divtime->getAttribute("datetime");
 				date_default_timezone_set('Europe/Madrid');
 				$dateres = date('Y-m-d H:i:s', strtotime($datetime));		
-				$date = new DateTime($dateres);	
+				$date = new DateTime($dateres);
 				$idExterno = $date->getTimestamp();
 				global $fecha_fi, $fecha_ini;
 				$datefinal = $fecha_fi." 23:59:59";

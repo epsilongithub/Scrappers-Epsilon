@@ -66,6 +66,7 @@
 	const TABLA_ICARUS_BRAND = 'scrapper_ig_posts_brand ';
 	const TABLA_COLAS = 'scrapper_ig_posts_cola ';
 	const BAN_CLASS = 'vqibd  wNNoj ';
+	const TABLA_LOG = 'scrapper_ig_log_profiles';
 	const TABLA_NOCTURNA_CONTENT = 'instagram_icarus_contents';
 
 	date_default_timezone_set('Europe/Madrid');
@@ -792,7 +793,7 @@
 				$sel_brand_existe = "SELECT * FROM ".TABLA_ICARUS_BRAND." WHERE id_profile= '".$id_profile."' AND fecha LIKE '".$fechaAct."'";
 				$res_brand_existe = $this->db->query($sel_brand_existe);
 
-				if ($res_brand_existe->num_rows() > 0) {
+				if ($res_brand_existe->num_rows > 0) {
 					$q_brand = "UPDATE ".TABLA_ICARUS_BRAND." SET eficiencia='".$posts."', valor2='".$likes."', valor3='".$comments."', valor4='".$posts."', impacto=(valor6+valor2+valor3), actualizacion=NOW() WHERE id_profile= '".$id_profile."' AND  fecha LIKE '".$fechaAct."'";
 					$texto = "ACTUALIZACION";
 				}
