@@ -887,13 +887,22 @@
 					echo $p->toString();
 				}
 			
-			}
-			/*else{
+			}else{
 
 				$insertQuery = "REPLACE INTO `".TABLA_ICARUS_CONTENT."`(`id_profile`, `pageName`, `createTime`, `message`, `link`, `likes`, `campo_8`, `campo_7`, `comments`, `id_externo`, `image`, `type`, `actualizacion`)
-														VALUES (".$id.", '".$url."', '".$p->getFecha()."', '".addslashes(utf8_encode($p->getMsg()))."', '".$p->getLink()."', ".$likesFinales.", ".$likesFinales.", ".$p->getNumViews().", ".$p->getNumComments().", '".$p->getIdExterno()."', '".$p->getImg()."', '".$p->getTipo()."', NOW())"; //(addslashes($p->getMsg()))
+														VALUES (".$id.", '".$url."', '".$p->getFecha()."', '".mysqli_real_escape_string($this->db, $p->getMsg())."', '".$p->getLink()."', ".$likesFinales.", ".$likesFinales.", ".$p->getNumViews().", ".$p->getNumComments().", '".$p->getIdExterno()."', '".$p->getImg()."', '".$p->getTipo()."', NOW())"; //(addslashes($p->getMsg()))
 
-			}*/
+
+				echo 'INSERTANDO ', $p->getIdExterno(), "\n";
+				echo $insertQuery."\n";
+				
+				if(!$this->db->query($insertQuery)) {
+					echo "Error insertando en la base de datos\n";
+					echo "ERROR: ", $this->db->error, "\n";
+					echo $p->toString();
+				}
+
+			}
 			
 
 
@@ -917,19 +926,19 @@
 	@return mysqli La instancia de la conexion creada.
 	*/
 	function createDatabase() {
-		mb_internal_encoding('UTF-8');
+		//mb_internal_encoding('UTF-8');
 		$db = new mysqli('192.168.8.131', 'saio', 'eEp13Sa12cr', 'saio');
 		if (mysqli_connect_errno()) {
 			printf("Connect failed: %s\n", mysqli_connect_error());
 			throw new Exception("Connection with database failed");
 		}
-
+/*
 		if (!$db->set_charset("utf8")) {
 			printf("Error cargando el conjunto de caracteres utf8: %s\n", $db->error);
 			throw new Exception("Cannot load UTF8 charset");
 		} else {
 			printf("Conjunto de caracteres actual: %s\n", $db->character_set_name());
-		}
+		}*/
 		return $db;
 	}
 
