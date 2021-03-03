@@ -66,6 +66,7 @@
 	const TABLA_ICARUS_BRAND = 'scrapper_ig_posts_brand ';
 	const TABLA_COLAS = 'scrapper_ig_posts_cola ';
 	const BAN_CLASS = 'vqibd  wNNoj ';
+	const TABLA_LOG = 'scrapper_ig_log_profiles';
 	const TABLA_NOCTURNA_CONTENT = 'instagram_icarus_contents';
 
 	date_default_timezone_set('Europe/Madrid');
