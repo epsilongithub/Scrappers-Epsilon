@@ -667,7 +667,7 @@
 			//Obtenemos los perfiles que estan en cola y los bloqueamos
 
 			if(!$this->db->ping()){
-				echo "\n No tenemos conexion a la BD. Volveremos en 8 minutos"
+				echo "\n No tenemos conexion a la BD. Volveremos en 8 minutos";
 				sleep(480);
 				passthru("php C:\Users\Tech\Documents\Scraper\instagram-public-posts.php");
 			}
