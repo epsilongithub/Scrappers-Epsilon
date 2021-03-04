@@ -666,6 +666,12 @@
 		function getCompaniesUrls($id_maquina) {
 			//Obtenemos los perfiles que estan en cola y los bloqueamos
 
+			if(!$this->db->ping()){
+				echo "\n No tenemos conexion a la BD. Volveremos en 8 minutos"
+				sleep(480);
+				passthru("php C:\Users\Tech\Documents\Scraper\instagram-public-posts.php");
+			}
+
 			$companiesWithPinterestQuery = "SELECT * FROM ".TABLA_COLAS." WHERE bloqueado!=1 ORDER BY orden limit 0,".BLOQUE;
 			$queryResult = $this->db->query($companiesWithPinterestQuery);
 			
