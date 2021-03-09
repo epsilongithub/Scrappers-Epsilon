@@ -763,8 +763,8 @@
 					$texto = "ACTUALIZACION";
 				}
 				else {
-					$q_brand = "INSERT INTO ".TABLA_ICARUS_BRAND." (id_profile, fecha, valor2, valor3, valor4, impacto, actualizacion) 
-							VALUES ('".$id_profile."', '".$fechaAct."', '".$likes."', '".$comments."', '".$posts."', (valor6+valor2+valor3), NOW())";
+					$q_brand = "INSERT INTO ".TABLA_ICARUS_BRAND." (id_profile, fecha, valor2, valor3, valor4, eficiencia, impacto, actualizacion) 
+							VALUES ('".$id_profile."', '".$fechaAct."', '".$likes."', '".$comments."', '".$posts."', '".$posts."', (valor6+valor2+valor3), NOW())";
 					$texto = "INSERCION";
 				}
 
