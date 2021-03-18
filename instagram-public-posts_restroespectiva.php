@@ -652,9 +652,12 @@
 
 		function Sleep_alograndre(){
 			//Random de 3,4,5,6 min
+			$fecha = date("H:i:s");
 			$min = array(180,240,300,360);
 			$int = rand(0, 3);
-			echo "VAMOS A DORMIR DURANTE ".$min[$int]." SEGUNDOS. ".date('Y-m-d H:i:s')."\n";
+			$fecha1 = date("Ymd H:i:s");
+
+			echo "VAMOS A DORMIR DURANTE ".$min[$int]." SEGUNDOS. DESDE ".$fecha." HASTA ".date("H:i:s",strtotime ( '+'.$min[$int].' second' , strtotime ($fecha1) ))."\n";
 			sleep($min[$int]);
 			echo "VOY A DESPERTARME";
 		}
