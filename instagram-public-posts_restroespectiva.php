@@ -652,9 +652,12 @@
 
 		function Sleep_alograndre(){
 			//Random de 3,4,5,6 min
+			$fecha = date("H:i:s");
 			$min = array(180,240,300,360);
 			$int = rand(0, 3);
-			echo "VAMOS A DORMIR DURANTE ".$min[$int]." SEGUNDOS. ".date('Y-m-d H:i:s')."\n";
+			$fecha1 = date("Ymd H:i:s");
+
+			echo "VAMOS A DORMIR DURANTE ".$min[$int]." SEGUNDOS. DESDE ".$fecha." HASTA ".date("H:i:s",strtotime ( '+'.$min[$int].' second' , strtotime ($fecha1) ))."\n";
 			sleep($min[$int]);
 			echo "VOY A DESPERTARME";
 		}
@@ -662,6 +665,12 @@
 		
 		function getCompaniesUrls($id_maquina) {
 			//Obtenemos los perfiles que estan en cola y los bloqueamos
+
+			if(!$this->db->ping()){
+				echo "\n No tenemos conexion a la BD. Volveremos en 8 minutos";
+				sleep(480);
+				passthru("php C:\Users\Tech\Documents\Scraper\instagram-public-posts_restroespectiva.php");
+			}
 
 			$companiesWithPinterestQuery = "SELECT * FROM ".TABLA_COLAS." WHERE bloqueado!=1 ORDER BY orden limit 0,".BLOQUE;
 			$queryResult = $this->db->query($companiesWithPinterestQuery);
