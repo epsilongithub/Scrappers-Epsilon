@@ -35,6 +35,7 @@
 	const COOKIES = 'aOOlW  bIiDR  ';
 	const LOGIN_USERNAME_CLASSNAME = '_2hvTZ pexuQ zyHYP';
 	const LOGIN_PASSWORD_CLASSNAME = '_2hvTZ pexuQ zyHYP';
+	const CUENTA_PENDIENTE_SMS = '_7UhW9     LjQVu     qyrsm KV-D4          uL8Hv     l4b0S    ';
 	const LIKES_CLASSNAME = 'sqdOP yWX7d     _8A5w5    ';	
 	const VIDEO_CLASSNAME = 'vcOH2';
 	const LIKES_DIV_CLASSNAME = 'Nm9Fw';
@@ -57,8 +58,7 @@
 	const HASH_ALGORITHM = 'md5';
 
 	const BLOQUE = '1';
-	const TABLA_LOG = 'scrapper_ig_log_profiles';
-	const LOCAL_IP = getHostByName(getHostName());
+
 
 	/*
 	Clase para almacenar la informacion relativa a un post.
@@ -74,8 +74,9 @@
 		private $numViews;
 		private $type;
 		private $date;
+		private $user;
 
-		function __construct($url, $idExterno, $numLikes, $img, $msg, $numComments, $type, $date, $numViews=0) {
+		function __construct($url, $idExterno, $numLikes, $img, $msg, $numComments, $type, $date, $username, $numViews=0) {
 			$this->url = $url;
 			$this->idExterno = $idExterno;
 			$this->numLikes = $numLikes;
@@ -85,6 +86,7 @@
 			$this->img = $img;
 			$this->type = $type;
 			$this->date = $date;
+			$this->user = $username;
 		}
 
 		function toString() {
@@ -114,6 +116,11 @@
 		function getImg() {
 			return $this->img;
 		}
+
+		function getUser() {
+			return $this->user;
+		}
+
 
 		function getMsg() {
 			return $this->msg;
@@ -175,7 +182,7 @@
 					//$this->taggedPage();
 					//$this->randomSleep();
 					$posts = $this->scrapPosts($id, $urlindiv);
-					$this->storePosts($id, $posts, $urlindiv);
+					//$this->storePosts($id, $posts, $urlindiv);
 					$this->deleteProfile($id);
 					
 				} catch (Exception $e) {
@@ -188,55 +195,7 @@
 
 			//$this->syncBrandByContent();
 		
-		function insertLog($id,$id_maquina,$accion,$id_log){
-			/****
-				$id --> id del perfil
-				$id_maquina --> id de la maquina
-				$accion --> si es un insert(0) o un update(1)
-				$id_log --> en el caso que sea una actualizacion tendra el id del log que se ha insertado anteriormente, si es un insert siempre sera 0
-			****/
-			$local_ip = getHostByName(getHostName());
 
-			if($accion == 0){
-				echo "\nENTRAMOS PARA INSERTAR UN NUEVO LOG CON ESTE PERFIL\n";
-				$fecha_ini = date("Y-m-d H:i:s");
-				$sql = "INSERT INTO ".TABLA_LOG." VALUES(NULL,$id,$id_maquina,'$fecha_ini','','','INICIAMOS EL PERFIL $id EN LA MAQUINA $local_ip',5)";
-
-				if(!$this->db->query($sql)) {
-					echo "Error updating en la base de datos\n";
-					echo "ERROR: ", $this->db->error, "\n";
-					return 1;
-				}ELSE{
-					echo "CONSULTA --> $sql\n";
-				}
-				$sql = "SELECT max(id) as 'max_id' FROM ".TABLA_LOG;
-				$queryResult = $this->db->query($sql);
-				foreach ($queryResult as $valor) {
-					$id_log = $valor["max_id"];
-				}
-				echo "YA HEMOS INTRODUCIDO UN LOG PARA ESTE PERFIL\n";
-				return $id_log;
-			}
-			if($accion == 1){
-				$fecha_fin = date("Y-m-d H:i:s");
-				if($id_log == 0){
-					echo "\nHA HABIDO UN ERROR OBTENIENDO EL ID DEL LOG\n";
-				}
-				echo "\nENTRAMOS PARA ACTUALIZAR EL LOG CON ESTE PERFIL\n";
-				$sql = "update ".TABLA_LOG." set fecha_fin='$fecha_fin',duracion=timediff(fecha_fin,fecha_ini),descripcion='FINALIZAMOS EL PERFIL $id EN LA MAQUINA $local_ip' where id=$id_log";
-				if(!$this->db->query($sql)) {
-					echo "Error updating en la base de datos\n";
-					echo "ERROR: ", $this->db->error, "\n";
-					//return 1;
-				}ELSE{
-					echo "CONSULTA --> $sql\n";
-				}
-
-				echo "YA HEMOS ACTUALIZADO EL LOG CON ESTE PERFIL\n";
-
-			}
-
-		}
 					
 		}
 
@@ -376,14 +335,17 @@
 					//ABRIR POST
 					$posting->click();
 					
-					$this->randomSleep();
-					$this->randomSleep();
-					
+					$this->driver->wait()->until(
+						WebDriverExpectedCondition::visibilityOfElementLocated(WebDriverBy::cssSelector("time[class='".POST_DATETIME."']"))
+					);
+
 					$divtime = $this->driver->findElement(WebDriverBy::cssSelector("time[class='".POST_DATETIME."']"));
+					
 					$datetime = $divtime->getAttribute("datetime");
 					date_default_timezone_set('Europe/Madrid');
-					$dateres = date('Y-m-d H:i:s', strtotime($datetime));	
-					$date = new DateTime($dateres);				
+					$dateres = date('Y-m-d H:i:s', strtotime($datetime));
+					$date = new DateTime($datetime);
+					//$dateres = $date->format('Y-m-d');
 					$idExterno = $date->getTimestamp();
 
 					global $fecha_fi, $fecha_ini;
@@ -394,6 +356,7 @@
 					echo "fecha post actual ".$dateres." < fecha ini ".$dateini."? \n";
 
 					if($dateres <= "2019-01-01 00:00:00"){
+						$this->driver->findElement(WebDriverBy::cssSelector("svg[aria-label='Cerrar']"))->click();
 						continue;
 					}
 
@@ -417,6 +380,8 @@
 					try {
 						$msg = $this->driver->findElement(WebDriverBy::cssSelector("div[class='".POST_MSG."']"));
 						$msgdeverda = $msg->findElement(WebDriverBy::xpath('./span'))->getText();
+						$usrmsg = $msg->findElement(WebDriverBy::xpath('./h2'))->getText();
+						echo "USR: ".$usrmsg."\n";
 					} catch (Exception $e) {
 						$msgdeverda = "";
 					}
@@ -486,8 +451,12 @@
 
 					echo "LO HEMOS COGIDO\n";
 
-					$bonk = new Post($urldelpost, $idExterno, $likes, $img, $msgdeverda, $comment, $type, $dateres, $repros);
+					$bonk = new Post($urldelpost, $idExterno, $likes, $img, $msgdeverda, $comment, $type, $dateres, $usrmsg, $repros);
 					array_push($postarray, $bonk);
+
+					
+					$this->storePostUnique($id, $bonk, $url);
+			
 				}
 			}
 			//exit;
@@ -562,6 +531,32 @@
           	else return false;
        	}
 
+       	function storePostUnique($id, $p, $url) {
+		
+			$linkecito = $p->getLink();
+			$banderita = $this->searchPost($linkecito);
+
+			if($banderita == true){
+
+				$insertQuery = "UPDATE `scrapper_ig_tags_content` SET `likes` = ".$p->getNumLikes().",  `comments` = ".$p->getNumComments().", `userId` = '".$p->getUser()."', `actualizacion` = now() WHERE `Link` = '".$linkecito."'";				
+			}
+			else{
+				$insertQuery = "REPLACE INTO `scrapper_ig_tags_content`(`id_profile_kmt`, `tagName`, `createTime`, `text`, `Link`, `likes`, `comments`, `thumb`, `userId`, `actualizacion`)
+				VALUES (".$id.", '".$url."', '".$p->getFecha()."', '".addslashes($p->getMsg())."', '".$p->getLink()."', ".$p->getNumLikes().", ".$p->getNumComments().", '".$p->getImg()."', '".$p->getUser()."', NOW())";
+
+			}
+			echo 'INSERTANDO ', $id, "\n";
+			echo $insertQuery."\n"; 
+			
+			
+			if(!$this->db->query($insertQuery)) {
+				echo "Error insertando en la base de datos\n";
+				echo "ERROR: ", $this->db->error, "\n";
+				echo $p->toString();
+			}
+	
+		}
+
 		function storePosts($id, $posts, $url) {
 			foreach ($posts as $p) {
 
@@ -570,11 +565,11 @@
 
 				if($banderita == true){
 
-					$insertQuery = "UPDATE `scrapper_ig_tags_content` SET `likes` = ".$p->getNumLikes().",  `comments` = ".$p->getNumComments().", `actualizacion` = now() WHERE `Link` = '".$linkecito."'";				
+					$insertQuery = "UPDATE `scrapper_ig_tags_content` SET `likes` = ".$p->getNumLikes().",  `comments` = ".$p->getNumComments().", `userId` = '".$p->getUser()."', `actualizacion` = now() WHERE `Link` = '".$linkecito."'";				
 				}
 				else{
-					$insertQuery = "REPLACE INTO `scrapper_ig_tags_content`(`id_profile_kmt`, `tagName`, `createTime`, `text`, `Link`, `likes`, `comments`, `thumb`, `actualizacion`)
-					VALUES (".$id.", '".$url."', '".$p->getFecha()."', '".addslashes($p->getMsg())."', '".$p->getLink()."', ".$p->getNumLikes().", ".$p->getNumComments().", '".$p->getImg()."', NOW())";
+					$insertQuery = "REPLACE INTO `scrapper_ig_tags_content`(`id_profile_kmt`, `tagName`, `createTime`, `text`, `Link`, `likes`, `comments`, `thumb`, `userId`, `actualizacion`)
+					VALUES (".$id.", '".$url."', '".$p->getFecha()."', '".addslashes($p->getMsg())."', '".$p->getLink()."', ".$p->getNumLikes().", ".$p->getNumComments().", '".$p->getImg()."', '".$p->getUser()."', NOW())";
 
 				}
 				echo 'INSERTANDO ', $id, "\n";
