@@ -38,6 +38,7 @@
 	const COOKIES = 'aOOlW  bIiDR  ';
 	const LOGIN_USERNAME_CLASSNAME = '_2hvTZ pexuQ zyHYP';
 	const LOGIN_PASSWORD_CLASSNAME = '_2hvTZ pexuQ zyHYP';
+	const CUENTA_PENDIENTE_SMS = '_7UhW9     LjQVu     qyrsm KV-D4          uL8Hv     l4b0S    ';
 	const LIKES_CLASSNAME = 'sqdOP yWX7d     _8A5w5    ';	
 	const VIDEO_CLASSNAME = 'vcOH2';
 	const LIKES_DIV_CLASSNAME = 'Nm9Fw';
@@ -349,11 +350,16 @@
 			try {
 				$this->driver->findElement(WebDriverBy::xpath("div[class='".BAN_CLASS."']"));
 			} catch (Exception $e) {
-				echo "NO ESTA BANEADO";
-				return 0;
+				
+				try {
+					$this->driver->findElement(WebDriverBy::xpath("h3[class='".CUENTA_PENDIENTE_SMS."']"));
+				} catch (Exception $e) {
+					echo "NO ESTA BANEADO\n";
+					return 0;
+				}
 			}
 
-			echo "OPPSS! Tiene pinta de que han baneado al usuario";
+			echo "OPPSS! Tiene pinta de que han baneado al usuario\n";
 			$actualizar_ultima_gestion = "UPDATE scrapper_users SET fecha_baneado = '".date('Y-m-d H:i:s')."', baneado = 1, contador_baneos = contador_baneos+1, en_uso = 1 WHERE id=".$id;
 			if(!$this->db->query($actualizar_ultima_gestion)) {
 				echo "Error updating en la base de datos\n";
@@ -361,8 +367,6 @@
 			}
 
 			return 1;
-			
-
 		}
 
 		function borrarCola($id){
