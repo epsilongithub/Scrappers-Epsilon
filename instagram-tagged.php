@@ -810,25 +810,25 @@
             }           
        }
 
-        function searchLikes($linkPost) {
+        function searchLikes($linkPost, $idprof) {
 
 	
-        	$q = "SELECT * FROM scrapper_ig_mentions_contents WHERE link='".$linkPost."'";
+        	$q = "SELECT * FROM scrapper_ig_mentions_contents WHERE link='".$linkPost."' AND id_profile='".$idprof."'";
+            $queryResult = $this->db->query($q);
+            echo "Select Post: ".$q."\n";
+            echo "Res Select: "; print_r(($queryResult)));
 
-           $queryResult = $this->db->query($q);
-
-           $post = array();
-
-           foreach ($queryResult as $r) {
+            $post = array();
+ 
+            foreach ($queryResult as $r) {
            		$post[] = $r['likes'];
-           }
+            }
 
-           if(!empty($post)){
+            if(!empty($post)){
                 return $post[0];
-           } else {
+            } else {
             	return 0;
-           }
-          
+            }           
        }
 
 		function storePosts($id, $posts, $url) {
@@ -866,7 +866,7 @@
        		$linkecito = $p->getLink();
 			$banderita = $this->searchPost($linkecito, $id);
 
-			$likesAntiguos = $this->searchLikes($linkecito);
+			$likesAntiguos = $this->searchLikes($linkecito, $id);
 			$likesScrap = $p->getNumLikes();
 
 			echo "url: ".$linkecito."\n";
