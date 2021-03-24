@@ -794,22 +794,20 @@
 
 	       	$q = "SELECT * FROM scrapper_ig_mentions_contents WHERE link='".$linkPost."' AND id_profile='".$idprof."'";
             $queryResult = $this->db->query($q);
- 			if(empty($queryResult)) return false;
- 			else return true;
+            echo "Select Post: ".$q."\n";
+            echo "Res Select: "; print_r(($queryResult)));
 
-            /*
-            $post = array();
+ 			$post = array();
 
-           foreach ($queryResult as $r) {
+           	foreach ($queryResult as $r) {
            		$post[] = $r['createTime'];
-           }
+            }
 
-           if(!empty($post)){
+            if(!empty($post)){
                 return true;
-           } else {
+            } else {
             	return false;
-           }
-           */
+            }           
        }
 
         function searchLikes($linkPost) {
