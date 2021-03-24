@@ -790,14 +790,15 @@
 		@param array(Post) posts Los posts a almacenar.
 		*/
 
-		function searchPost($linkPost) {
+		function searchPost($linkPost, $idprof) {
 
-	
-        	$q = "SELECT * FROM scrapper_ig_mentions_contents WHERE link='".$linkPost."'";
+	       	$q = "SELECT * FROM scrapper_ig_mentions_contents WHERE link='".$linkPost."' AND id_profile='".$idprof."'";
+            $queryResult = $this->db->query($q);
+ 			if(empty($queryResult)) return false;
+ 			else return true;
 
-           $queryResult = $this->db->query($q);
-
-           $post = array();
+            /*
+            $post = array();
 
            foreach ($queryResult as $r) {
            		$post[] = $r['createTime'];
@@ -808,6 +809,7 @@
            } else {
             	return false;
            }
+           */
        }
 
         function searchLikes($linkPost) {
@@ -835,7 +837,7 @@
 			foreach ($posts as $p) {
 
 				$linkecito = $p->getLink();
-				$banderita = $this->searchPost($linkecito);
+				$banderita = $this->searchPost($linkecito, $id);
 
 				echo "EEEE - ".$p->getMsg()."\n";
 
@@ -864,7 +866,7 @@
 		function storePostUnique($id, $p, $url, $num){
 
        		$linkecito = $p->getLink();
-			$banderita = $this->searchPost($linkecito);
+			$banderita = $this->searchPost($linkecito, $id);
 
 			$likesAntiguos = $this->searchLikes($linkecito);
 			$likesScrap = $p->getNumLikes();
