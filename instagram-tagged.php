@@ -795,7 +795,7 @@
 	       	$q = "SELECT * FROM scrapper_ig_mentions_contents WHERE link='".$linkPost."' AND id_profile='".$idprof."'";
             $queryResult = $this->db->query($q);
             echo "Select Post: ".$q."\n";
-            echo "Res Select: "; print_r(($queryResult)));
+            echo "Res Select: "; print_r($queryResult);
 
  			$post = array();
 
@@ -816,7 +816,7 @@
         	$q = "SELECT * FROM scrapper_ig_mentions_contents WHERE link='".$linkPost."' AND id_profile='".$idprof."'";
             $queryResult = $this->db->query($q);
             echo "Select Post: ".$q."\n";
-            echo "Res Select: "; print_r(($queryResult)));
+            echo "Res Select: "; print_r($queryResult);
 
             $post = array();
  
