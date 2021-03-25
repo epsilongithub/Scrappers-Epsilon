@@ -654,6 +654,12 @@
 		function getCompaniesUrls($id_maquina) {
 		//Obtenemos los perfiles que estan en cola y los bloqueamos
 
+			if(!$this->db->ping()){
+				echo "\n No tenemos conexion a la BD. Volveremos en 8 minutos";
+				sleep(480);
+				passthru("php C:\Users\Tech\Documents\Scraper\instagram-public-posts.php");
+			}
+			
 			$companiesWithPinterestQuery = "SELECT *
 						FROM scrapper_ig_mentions_cola where bloqueado != 1
 						ORDER BY orden LIMIT 0,".BLOQUE;
@@ -790,52 +796,52 @@
 		@param array(Post) posts Los posts a almacenar.
 		*/
 
-		function searchPost($linkPost) {
+		function searchPost($linkPost, $idprof) {
 
-	
-        	$q = "SELECT * FROM scrapper_ig_mentions_contents WHERE link='".$linkPost."'";
+	       	$q = "SELECT * FROM scrapper_ig_mentions_contents WHERE link='".$linkPost."' AND id_profile='".$idprof."'";
+            $queryResult = $this->db->query($q);
+            echo "Select Post: ".$q."\n";
+            echo "Res Select: "; print_r($queryResult);
 
-           $queryResult = $this->db->query($q);
+ 			$post = array();
 
-           $post = array();
-
-           foreach ($queryResult as $r) {
+           	foreach ($queryResult as $r) {
            		$post[] = $r['createTime'];
-           }
+            }
 
-           if(!empty($post)){
+            if(!empty($post)){
                 return true;
-           } else {
+            } else {
             	return false;
-           }
+            }           
        }
 
-        function searchLikes($linkPost) {
+        function searchLikes($linkPost, $idprof) {
 
 	
-        	$q = "SELECT * FROM scrapper_ig_mentions_contents WHERE link='".$linkPost."'";
+        	$q = "SELECT * FROM scrapper_ig_mentions_contents WHERE link='".$linkPost."' AND id_profile='".$idprof."'";
+            $queryResult = $this->db->query($q);
+            echo "Select Post: ".$q."\n";
+            echo "Res Select: "; print_r($queryResult);
 
-           $queryResult = $this->db->query($q);
-
-           $post = array();
-
-           foreach ($queryResult as $r) {
+            $post = array();
+ 
+            foreach ($queryResult as $r) {
            		$post[] = $r['likes'];
-           }
+            }
 
-           if(!empty($post)){
+            if(!empty($post)){
                 return $post[0];
-           } else {
+            } else {
             	return 0;
-           }
-          
+            }           
        }
 
 		function storePosts($id, $posts, $url) {
 			foreach ($posts as $p) {
 
 				$linkecito = $p->getLink();
-				$banderita = $this->searchPost($linkecito);
+				$banderita = $this->searchPost($linkecito, $id);
 
 				echo "EEEE - ".$p->getMsg()."\n";
 
@@ -864,9 +870,9 @@
 		function storePostUnique($id, $p, $url, $num){
 
        		$linkecito = $p->getLink();
-			$banderita = $this->searchPost($linkecito);
+			$banderita = $this->searchPost($linkecito, $id);
 
-			$likesAntiguos = $this->searchLikes($linkecito);
+			$likesAntiguos = $this->searchLikes($linkecito, $id);
 			$likesScrap = $p->getNumLikes();
 
 			echo "url: ".$linkecito."\n";
