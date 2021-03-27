@@ -62,6 +62,7 @@
 	const BLOQUE = '1';
 	const TABLA_LOG = 'scrapper_ig_log_profiles';
 	const BAN_CLASS = 'vqibd  wNNoj ';
+	const SALIR_BAN = '_6vuJt';
 
 	/*
 	Clase para almacenar la informacion relativa a un post.
@@ -165,16 +166,17 @@
 			$this->firstlogin($user,$passwd);
 
 			while ($varBaneado == 1) {
+				$this->randomSleep();
 				$varBaneado = $this->baneadito($id_user);
 				echo "VARBANEADO = ".$varBaneado."\n";
 				if($varBaneado == 1){
-					$this->logout();
+					
 					$credenciales = $this->get_user();
-
+					$this->driver->findElement(WebDriverBy::cssSelector("a[class='".SALIR_BAN."']"))->click();
 					$user = $credenciales["user"];
 					$passwd = $credenciales["password"];
 					$id_user = $credenciales["id_user"];
-
+					$this->randomSleep();
 					$this->login($user,$passwd);
 				}
 			}
@@ -194,12 +196,32 @@
 					try{
 						$this->randomSleep();
 						$this->driver->get($urlprofile);
+
+						$varBaneado = 1;
+
+						while ($varBaneado == 1) {
+							$this->randomSleep();
+							$varBaneado = $this->baneadito($id_user);
+							echo "VARBANEADO = ".$varBaneado."\n";
+							if($varBaneado == 1){
+								
+								$credenciales = $this->get_user();
+								$this->driver->findElement(WebDriverBy::cssSelector("a[class='".SALIR_BAN."']"))->click();
+								$user = $credenciales["user"];
+								$passwd = $credenciales["password"];
+								$id_user = $credenciales["id_user"];
+								$this->randomSleep();
+								$this->login($user,$passwd);
+							}
+						}
+
+						$this->driver->get($urlprofile);
+
 						$this->randomSleep();
 						$this->taggedPage();
 						$this->randomSleep();
 						$posts = $this->scrapPosts($id, $urlindiv,$id_user);
 						//$this->storePosts($id, $posts, $urlindiv);
-						
 					} catch (Exception $e) {
 						echo 'Fallo storeando info de ', $id, " \n";
 						echo 'Mensaje de error: ', $e->getMessage(), "\n";
@@ -207,7 +229,6 @@
 
 					//$this->syncBrandByProfile($id);
 					$this->borrarCola($id);
-
 				}
 				$this->Sleep_alograndre();		
 			}
@@ -343,8 +364,11 @@
 
 		function baneadito($id){
 			try {
-				$this->driver->findElement(WebDriverBy::xpath("div[class='".BAN_CLASS."']"));
+				$this->driver->findElement(WebDriverBy::cssSelector("div[class='".BAN_CLASS."']"));
+				echo "BANEADO\n";
 			} catch (Exception $e) {
+
+				echo "a ve ".$e."\n";
 				
 				try {
 					$this->driver->findElement(WebDriverBy::xpath("h3[class='".CUENTA_PENDIENTE_SMS."']"));
