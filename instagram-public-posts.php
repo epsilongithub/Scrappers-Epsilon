@@ -724,10 +724,9 @@
 		function login($user,$passwd) {
 			echo "Voy a volver a loggearme \n";
 			$this->driver->get(LOGIN_URL);
-			$this->driver->manage()->timeouts()->implicitlyWait(999);
-			$driver->wait(10, 500)->until(
-			  WebDriverExpectedCondition::UrlIs(LOGIN_URL)
-			);
+			$this->driver->wait()->until(
+						WebDriverExpectedCondition::visibilityOfElementLocated(WebDriverBy::cssSelector("div[class='K-1uj Z7p_S']"))
+					);
 			$this->randomSleep();
 
 			$login2 = $this->driver->findElements(WebDriverBy::cssSelector("input[class='".LOGIN_USERNAME_CLASSNAME."']"));
