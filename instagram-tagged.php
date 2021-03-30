@@ -169,15 +169,19 @@
 				$this->randomSleep();
 				$varBaneado = $this->baneadito($id_user);
 				echo "VARBANEADO = ".$varBaneado."\n";
+
 				if($varBaneado == 1){
-					
-					$credenciales = $this->get_user();
-					$this->driver->findElement(WebDriverBy::cssSelector("a[class='".SALIR_BAN."']"))->click();
+					/*$credenciales = $this->get_user();
+					//$this->driver->findElement(WebDriverBy::cssSelector("a[class='".SALIR_BAN."']"))->click();
 					$user = $credenciales["user"];
 					$passwd = $credenciales["password"];
 					$id_user = $credenciales["id_user"];
 					$this->randomSleep();
-					$this->login($user,$passwd);
+					$this->login($user,$passwd);*/
+					$this->driver->close();
+					passthru("php C:\Users\Tech\Documents\Scraper\instagram-tagged.php");
+
+
 				}
 			}
 
@@ -191,7 +195,9 @@
 					echo 'Scrapping ', $urlindiv ,"...\n"; 
 					$this->getFechasCargas($id);
 
+					$id_log = $this->insertLog($id,$id_maquina,0,0);
 					$urlprofile = "https://www.instagram.com/".$urlindiv;
+					$posts = array();
 
 					try{
 						$this->randomSleep();
@@ -205,13 +211,8 @@
 							echo "VARBANEADO = ".$varBaneado."\n";
 							if($varBaneado == 1){
 								
-								$credenciales = $this->get_user();
-								$this->driver->findElement(WebDriverBy::cssSelector("a[class='".SALIR_BAN."']"))->click();
-								$user = $credenciales["user"];
-								$passwd = $credenciales["password"];
-								$id_user = $credenciales["id_user"];
-								$this->randomSleep();
-								$this->login($user,$passwd);
+								$this->driver->close();
+								passthru("php C:\Users\Tech\Documents\Scraper\instagram-tagged.php");
 							}
 						}
 
@@ -229,6 +230,7 @@
 
 					//$this->syncBrandByProfile($id);
 					$this->borrarCola($id);
+					$this->insertLog($id,$id_maquina,1,$id_log);
 				}
 				$this->Sleep_alograndre();		
 			}
@@ -256,7 +258,7 @@
 					echo "Error updating en la base de datos\n";
 					echo "ERROR: ", $this->db->error, "\n";
 					return 1;
-				}ELSE{
+				}else{
 					echo "CONSULTA --> $sql\n";
 				}
 				$sql = "SELECT max(id) as 'max_id' FROM ".TABLA_LOG;
@@ -278,7 +280,7 @@
 					echo "Error updating en la base de datos\n";
 					echo "ERROR: ", $this->db->error, "\n";
 					//return 1;
-				}ELSE{
+				}else{
 					echo "CONSULTA --> $sql\n";
 				}
 
@@ -364,18 +366,14 @@
 
 		function baneadito($id){
 			try {
-				$this->driver->findElement(WebDriverBy::cssSelector("div[class='".BAN_CLASS."']"));
-				echo "BANEADO\n";
-			} catch (Exception $e) {
+				$this->driver->findElement(WebDriverBy::cssSelector("span[class='_2dbep qNELH']"));
 
-				echo "a ve ".$e."\n";
+				echo "NO ESTA BANEADO\n";
+				return 0;
+
+			} catch (Exception $e) {
 				
-				try {
-					$this->driver->findElement(WebDriverBy::xpath("h3[class='".CUENTA_PENDIENTE_SMS."']"));
-				} catch (Exception $e) {
-					echo "NO ESTA BANEADO\n";
-					return 0;
-				}
+				echo "BANEADO\n";
 			}
 
 			echo "OPPSS! Tiene pinta de que han baneado al usuario\n";
@@ -681,7 +679,7 @@
 			if(!$this->db->ping()){
 				echo "\n No tenemos conexion a la BD. Volveremos en 8 minutos";
 				sleep(480);
-				passthru("php C:\Users\Tech\Documents\Scraper\instagram-public-posts.php");
+				passthru("php C:\Users\Tech\Documents\Scraper\instagram-tagged.php");
 			}
 			
 			$companiesWithPinterestQuery = "SELECT *

@@ -172,16 +172,12 @@
 			$this->firstlogin($user,$passwd);
 
 			while ($varBaneado == 1) {
+				$this->randomSleep();
 				$varBaneado = $this->baneadito($id_user);
+				echo "VARBANEADO = ".$varBaneado."\n";
 				if($varBaneado == 1){
-					$this->logout();
-					$credenciales = $this->get_user($id_maquina);
-
-					$user = $credenciales["user"];
-					$passwd = $credenciales["password"];
-					$id_user = $credenciales["id_user"];
-
-					$this->login($user,$passwd);
+					$this->driver->close();
+					passthru("php C:\Users\Tech\Documents\Scraper\instagram-public-posts.php");
 				}
 			}
 			
@@ -202,9 +198,24 @@
 					$urlprofile = "https://www.instagram.com/".$urlindiv;
 					$posts = array();
 
-					try{
+					$this->randomSleep();
+					$this->driver->get($urlprofile);
+
+					$varBaneado = 1;
+
+					while ($varBaneado == 1) {
 						$this->randomSleep();
-						$this->driver->get($urlprofile);
+						$varBaneado = $this->baneadito($id_user);
+						echo "VARBANEADO = ".$varBaneado."\n";
+						if($varBaneado == 1){
+							$this->driver->close();
+							passthru("php C:\Users\Tech\Documents\Scraper\instagram-public-posts.php");
+						}
+					}
+			
+
+					try{
+						
 						$this->randomSleep();
 						$posts = $this->scrapPosts($id, $urlindiv, $id_user);
 					}
@@ -254,7 +265,7 @@
 					echo "Error updating en la base de datos\n";
 					echo "ERROR: ", $this->db->error, "\n";
 					return 1;
-				}ELSE{
+				}else{
 					echo "CONSULTA --> $sql\n";
 				}
 				$sql = "SELECT max(id) as 'max_id' FROM ".TABLA_LOG;
@@ -276,7 +287,7 @@
 					echo "Error updating en la base de datos\n";
 					echo "ERROR: ", $this->db->error, "\n";
 					//return 1;
-				}ELSE{
+				}else{
 					echo "CONSULTA --> $sql\n";
 				}
 
@@ -990,6 +1001,9 @@
 
 	} catch (Exception $e) {
 		echo "No se ha podido cargar la sesion\n";
+		$handle = fopen("error_log.txt", "w");
+		fwrite($handle, $e);
+		fclose($handle);
 		echo $e->getMessage(), "\n";
 	}
 ?>
