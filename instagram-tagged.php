@@ -365,6 +365,11 @@
 		}
 
 		function baneadito($id){
+
+			/*$this->driver->wait()->until(
+				WebDriverExpectedCondition::visibilityOfElementLocated(WebDriverBy::cssSelector("span[class='_2dbep qNELH']"))
+			);
+
 			try {
 				$this->driver->findElement(WebDriverBy::cssSelector("span[class='_2dbep qNELH']"));
 
@@ -374,6 +379,17 @@
 			} catch (Exception $e) {
 				
 				echo "BANEADO\n";
+			}*/
+			sleep(3);
+
+			$currentURL = $this->driver->getCurrentURL();
+
+			if(strpos($currentURL, 'challenge') !== false){
+
+				echo "BANEADO\n";
+			}else{
+				echo "NO BANEADO\n";
+				return 0;
 			}
 
 			echo "OPPSS! Tiene pinta de que han baneado al usuario\n";
