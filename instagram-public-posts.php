@@ -360,16 +360,16 @@
 
 
 		function baneadito($id){
-			try {
-				$this->driver->findElement(WebDriverBy::xpath("div[class='".BAN_CLASS."']"));
-			} catch (Exception $e) {
-				
-				try {
-					$this->driver->findElement(WebDriverBy::xpath("h3[class='".CUENTA_PENDIENTE_SMS."']"));
-				} catch (Exception $e) {
-					echo "NO ESTA BANEADO\n";
-					return 0;
-				}
+			sleep(3);
+
+			$currentURL = $this->driver->getCurrentURL();
+
+			if(strpos($currentURL, 'challenge') !== false){
+
+				echo "BANEADO\n";
+			}else{
+				echo "NO BANEADO\n";
+				return 0;
 			}
 
 			echo "OPPSS! Tiene pinta de que han baneado al usuario\n";
