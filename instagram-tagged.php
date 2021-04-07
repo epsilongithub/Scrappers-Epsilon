@@ -446,6 +446,7 @@
 			$cuantos2 = 0;
 			$cuantosAntiguo = 0;
 			$cont = 0;
+			$cuantosFechaFuera = 0;
 
 
 			while ($flagsortir) {
@@ -532,6 +533,12 @@
 
 				//SI NO ESTA ENTRE LAS FECHAS SELECCIONADAS SE LO SALTA O ACABA SI SE PASA
 				if($dateres < $dateini){
+					if ($cuantosFechaFuera < 5){
+						$cuantosFechaFuera++;
+						$this->driver->findElement(WebDriverBy::cssSelector("svg[aria-label='Cerrar']"))->click();
+						echo "Seguimos\n";
+						continue;
+					}
 					echo "FUERA DE FECHAS\n";
 					$flagsortir = false;
 					break;
@@ -543,6 +550,7 @@
 				}
 
 				echo "LO COGEMOS\n";
+				$cuantosFechaFuera = 0;
 
 				try {
 					$msg = $this->driver->findElement(WebDriverBy::cssSelector("div[class='".POST_MSG."']"));
