@@ -533,7 +533,7 @@
 
 				//SI NO ESTA ENTRE LAS FECHAS SELECCIONADAS SE LO SALTA O ACABA SI SE PASA
 				if($dateres < $dateini){
-					if ($cuantosFechaFuera < 5){
+					if ($cuantosFechaFuera < 10){ 
 						$cuantosFechaFuera++;
 						$this->driver->findElement(WebDriverBy::cssSelector("svg[aria-label='Cerrar']"))->click();
 						echo "Seguimos\n";
@@ -546,6 +546,7 @@
 					//CERRAR POST
 					$this->driver->findElement(WebDriverBy::cssSelector("svg[aria-label='Cerrar']"))->click();
 					echo "AUN NO HA LLEGADO A LA FECHA\n";
+					$cuantosFechaFuera = 0;
 					continue;
 				}
 
@@ -847,7 +848,7 @@
 	       	$q = "SELECT * FROM scrapper_ig_mentions_contents WHERE link='".$linkPost."' AND id_profile='".$idprof."'";
             $queryResult = $this->db->query($q);
             echo "Select Post: ".$q."\n";
-            echo "Res Select: "; print_r($queryResult);
+            ///echo "Res Select: "; print_r($queryResult);
 
  			$post = array();
 
