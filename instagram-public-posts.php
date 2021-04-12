@@ -684,6 +684,7 @@
 			if(!$this->db->ping()){
 				echo "\n No tenemos conexion a la BD. Volveremos en 8 minutos";
 				sleep(480);
+				$this->driver->close();
 				passthru("php C:\Users\Tech\Documents\Scraper\instagram-public-posts.php");
 			}
 
