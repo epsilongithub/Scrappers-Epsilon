@@ -533,7 +533,7 @@
 
 				//SI NO ESTA ENTRE LAS FECHAS SELECCIONADAS SE LO SALTA O ACABA SI SE PASA
 				if($dateres < $dateini){
-					if ($cuantosFechaFuera < 10){ 
+					if ($cuantosFechaFuera < 20){ 
 						$cuantosFechaFuera++;
 						$this->driver->findElement(WebDriverBy::cssSelector("svg[aria-label='Cerrar']"))->click();
 						echo "Seguimos\n";
