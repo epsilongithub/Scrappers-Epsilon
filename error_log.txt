@@ -1,9 +1,0 @@
-Facebook\WebDriver\Exception\WebDriverCurlException: Curl error thrown for http POST to /session/9dfd82d4d490136f1d5942e5ef8040e0/url with params: {"url":"https:\/\/www.instagram.com\/tigerbeerde"}
-
-Operation timed out after 30008 milliseconds with 0 bytes received in C:\Users\Tech\Documents\Scraper\vendor\facebook\webdriver\lib\Remote\HttpCommandExecutor.php:297
-Stack trace:
-#0 C:\Users\Tech\Documents\Scraper\vendor\facebook\webdriver\lib\Remote\RemoteWebDriver.php(565): Facebook\WebDriver\Remote\HttpCommandExecutor->execute(Object(Facebook\WebDriver\Remote\WebDriverCommand))
-#1 C:\Users\Tech\Documents\Scraper\vendor\facebook\webdriver\lib\Remote\RemoteWebDriver.php(244): Facebook\WebDriver\Remote\RemoteWebDriver->execute('get', Array)
-#2 C:\Users\Tech\Documents\Scraper\instagram-public-posts.php(202): Facebook\WebDriver\Remote\RemoteWebDriver->get('https://www.ins...')
-#3 C:\Users\Tech\Documents\Scraper\instagram-public-posts.php(999): Facebook\WebDriver\InstagramScraper->run('2')
-#4 {main}
