@@ -262,7 +262,7 @@
 				echo "\nENTRAMOS PARA INSERTAR UN NUEVO LOG CON ESTE PERFIL\n";
 				$fecha_ini = date("Y-m-d H:i:s");
 				$sql = "INSERT INTO ".TABLA_LOG." VALUES(NULL,$id,$id_maquina,'$fecha_ini','','','INICIAMOS EL PERFIL $id EN LA MAQUINA $local_ip',1,$id_user)";
-
+				echo $sql;
 				if(!$this->db->query($sql)) {
 					echo "Error updating en la base de datos\n";
 					echo "ERROR: ", $this->db->error, "\n";
