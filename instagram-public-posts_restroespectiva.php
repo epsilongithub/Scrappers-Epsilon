@@ -198,7 +198,7 @@
 					echo 'Scrapping ', $urlindiv ,"...\n"; 
 					$this->getFechasCargas($id);
 
-					$id_log = $this->insertLog($id,$id_maquina,0,0);
+					$id_log = $this->insertLog($id,$id_maquina,0,0,$id_user);
 					$urlprofile = "https://www.instagram.com/".$urlindiv;
 					$posts = array();
 
@@ -227,7 +227,7 @@
 
 					$this->syncBrandByProfile($id);
 					$this->borrarCola($id);
-					$this->insertLog($id,$id_maquina,1,$id_log);
+					$this->insertLog($id,$id_maquina,1,$id_log,$id_user);
 				}
 				//$this->syncBrandByContent();
 			}
@@ -238,7 +238,7 @@
 			$this->logout();
 		}
 
-		function insertLog($id,$id_maquina,$accion,$id_log){
+		function insertLog($id,$id_maquina,$accion,$id_log,$id_user){
 			/****
 				$id --> id del perfil
 				$id_maquina --> id de la maquina
@@ -250,7 +250,7 @@
 			if($accion == 0){
 				echo "\nENTRAMOS PARA INSERTAR UN NUEVO LOG CON ESTE PERFIL\n";
 				$fecha_ini = date("Y-m-d H:i:s");
-				$sql = "INSERT INTO ".TABLA_LOG." VALUES(NULL,$id,$id_maquina,'$fecha_ini','','','INICIAMOS EL PERFIL $id EN LA MAQUINA $local_ip',2)";
+				$sql = "INSERT INTO ".TABLA_LOG." VALUES(NULL,$id,$id_maquina,'$fecha_ini','','','INICIAMOS EL PERFIL $id EN LA MAQUINA $local_ip',2,$id_user)";
 
 				if(!$this->db->query($sql)) {
 					echo "Error updating en la base de datos\n";
