@@ -59,7 +59,8 @@
 
 	const HASH_ALGORITHM = 'md5';
 
-	const BLOQUE = '1';
+	const BLOQUE = '5';
+	const TABLA_COLAS = 'scrapper_ig_mentions_cola';
 	const TABLA_LOG = 'scrapper_ig_log_profiles';
 	const BAN_CLASS = 'vqibd  wNNoj ';
 	const SALIR_BAN = '_6vuJt';
@@ -186,7 +187,7 @@
 			}
 
 			while($var){
-
+				$contadorPerfilesMal = 0;
 				$urls = $this->getCompaniesUrls($id_maquina);
 
 				//SCRAP ALL THE PHOTOS IN THE FEEDS
@@ -195,7 +196,7 @@
 					echo 'Scrapping ', $urlindiv ,"...\n"; 
 					$this->getFechasCargas($id);
 
-					$id_log = $this->insertLog($id,$id_maquina,0,0);
+					$id_log = $this->insertLog($id,$id_maquina,0,0,$id_user);
 					$urlprofile = "https://www.instagram.com/".$urlindiv;
 					$posts = array();
 
@@ -229,8 +230,8 @@
 					}
 
 					//$this->syncBrandByProfile($id);
-					$this->borrarCola($id);
-					$this->insertLog($id,$id_maquina,1,$id_log);
+					$this->insertLog($id,$id_maquina,1,$id_log,$id_user);
+					$contadorPerfilesMal = $this->borrarCola($id, $id_maquina, $id_log, $contadorPerfilesMal);
 				}
 				$this->Sleep_alograndre();		
 			}
@@ -240,7 +241,7 @@
 					
 		}
 
-		function insertLog($id,$id_maquina,$accion,$id_log){
+		function insertLog($id,$id_maquina,$accion,$id_log,$id_user){
 			/****
 				$id --> id del perfil
 				$id_maquina --> id de la maquina
@@ -252,7 +253,7 @@
 			if($accion == 0){
 				echo "\nENTRAMOS PARA INSERTAR UN NUEVO LOG CON ESTE PERFIL\n";
 				$fecha_ini = date("Y-m-d H:i:s");
-				$sql = "INSERT INTO ".TABLA_LOG." VALUES(NULL,$id,$id_maquina,'$fecha_ini','','','INICIAMOS EL PERFIL $id EN LA MAQUINA $local_ip',3)";
+				$sql = "INSERT INTO ".TABLA_LOG." VALUES(NULL,$id,$id_maquina,'$fecha_ini','','','INICIAMOS EL PERFIL $id EN LA MAQUINA $local_ip',3,$id_user)";
 
 				if(!$this->db->query($sql)) {
 					echo "Error updating en la base de datos\n";
@@ -289,16 +290,74 @@
 			}
 
 		}
-		function borrarCola($id){
+		function borrarCola($id, $idmaq, $idlog, $contador){
 
-			echo $id."QUE TE VOY A BORRARRR\n";
+			echo "QUE TE VOY A BORRARRR\n";
 
-			$queryborro = "DELETE FROM scrapper_ig_mentions_cola
-						WHERE id_profile = ".$id."";
+			$querylog = "SELECT * FROM ".TABLA_LOG." WHERE id = '".$idlog."'";
 
-			if(!$this->db->query($queryborro)) {
-					echo "Error deleting en la base de datos\n";
+			$queryResult = $this->db->query($querylog);
+		
+			foreach ($queryResult as $r) {
+				$fecha = $r['fecha_ini'];
+			}
+
+			$dteStart = new DateTime($fecha);
+   			$dteEnd   = new DateTime('now');
+
+   			$dteDiff  = $dteStart->diff($dteEnd);
+   			$dteFinal = $dteDiff->format("%H:%I:%S");
+
+   			echo "\nEl perfil ha tardado: ".$dteFinal."\n";
+
+   			if ($dteFinal < "00:00:45") {
+
+   				echo "Menos del minimo\n";
+   				$contador++;
+
+
+   				$qUpdateCola = "UPDATE ".TABLA_COLAS." SET bloqueado = 0 WHERE id_profile = ".$id."";
+   				if(!$this->db->query($qUpdateCola)) {
+					echo "Error update en la base de datos\n";
 					echo "ERROR: ", $this->db->error, "\n";
+				}
+
+				$qUpdateLog = "UPDATE ".TABLA_LOG." SET fecha_fin=now(), duracion=timediff(fecha_fin,fecha_ini), descripcion='(POSIBLE ERROR) FINALIZAMOS EL PERFIL ".$id." EN LA MAQUINA ".$idmaq."' where id=".$idlog."";
+				if(!$this->db->query($qUpdateLog)) {
+					echo "Error update en la base de datos\n";
+					echo "ERROR: ", $this->db->error, "\n";
+				}
+
+				/*
+				$selectMaquinas = "SELECT COUNT(*) as apagadas FROM scrapper_maquinas WHERE tipo_maquina = 1 AND apagada = 1";
+
+				$queryResult2 = $this->db->query($selectMaquinas);
+						
+				foreach ($queryResult2 as $r2) {
+					$numOff = $r2['apagadas'];
+				}*/
+
+				if($contador >= 5){
+
+					echo "Uy Uy Uy la apago\n";
+					$qApagar = "UPDATE scrapper_maquinas SET apagada = 1 WHERE id=".$idmaq."";
+					if(!$this->db->query($qApagar)) {
+						echo "Error update en la base de datos\n";
+						echo "ERROR: ", $this->db->error, "\n";
+					}
+
+					$this->driver->close();
+
+				}
+
+   			}else{
+
+				$queryborro = "DELETE FROM ".TABLA_COLAS." WHERE id_profile = ".$id."";
+
+				if(!$this->db->query($queryborro)) {
+						echo "Error deleting en la base de datos\n";
+						echo "ERROR: ", $this->db->error, "\n";
+				}
 			}
 
 
