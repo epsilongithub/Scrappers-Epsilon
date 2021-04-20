@@ -17,6 +17,8 @@
 	$fecha_ini = "2020-12-08";
 	$fecha_fi = "2020-12-20";
 
+	$global_rep = 20;
+
 
 	const LOGIN_URL = 'https://www.instagram.com/accounts/login/';
 	
@@ -64,6 +66,8 @@
 	const TABLA_LOG = 'scrapper_ig_log_profiles';
 	const BAN_CLASS = 'vqibd  wNNoj ';
 	const SALIR_BAN = '_6vuJt';
+
+
 
 	/*
 	Clase para almacenar la informacion relativa a un post.
@@ -231,7 +235,7 @@
 
 					//$this->syncBrandByProfile($id);
 					$this->insertLog($id,$id_maquina,1,$id_log,$id_user);
-					$contadorPerfilesMal = $this->borrarCola($id, $id_maquina, $id_log, $contadorPerfilesMal);
+					$contadorPerfilesMal = $this->borrarCola($id, $id_maquina, $id_log, $contadorPerfilesMal, $id_user);
 				}
 				$this->Sleep_alograndre();		
 			}
@@ -290,7 +294,7 @@
 			}
 
 		}
-		function borrarCola($id, $idmaq, $idlog, $contador){
+		function borrarCola($id, $idmaq, $idlog, $contador, $idUser){
 
 			echo "QUE TE VOY A BORRARRR\n";
 
@@ -316,7 +320,7 @@
    				$contador++;
 
 
-   				$qUpdateCola = "UPDATE ".TABLA_COLAS." SET bloqueado = 0 WHERE id_profile = ".$id."";
+   				$qUpdateCola = "UPDATE ".TABLA_COLAS." SET bloqueado = 0, orden = 99 WHERE id_profile = ".$id."";
    				if(!$this->db->query($qUpdateCola)) {
 					echo "Error update en la base de datos\n";
 					echo "ERROR: ", $this->db->error, "\n";
@@ -346,7 +350,14 @@
 						echo "ERROR: ", $this->db->error, "\n";
 					}
 
+					$qUser = "UPDATE scrapper_users SET en_uso = 0 WHERE id = ".$idUser."";
+					if(!$this->db->query($qUser)) {
+						echo "Error update en la base de datos\n";
+						echo "ERROR: ", $this->db->error, "\n";
+					}
+
 					$this->driver->close();
+					exit;
 
 				}
 
@@ -396,13 +407,21 @@
 		function get_user(){
 			//Obtiene el primer usuario que este libre y NO baneado y siempre sera el que tenga la fecha de ultima actividad mas antigua. En caso
 			//de que todos los usuarios esten ocupados obtendremos el ultimo usuario utilizado y sin banear.
+			$gotcha = true;
 
-			$sql = "select * from scrapper_users where en_uso = 0 and baneado != 1 order by fecha_ultima_actividad";
-			$queryResult = $this->db->query($sql);
-			if($queryResult->num_rows < 1){
-				echo "TODOS LOS USUARIOS ESTAN EN USO\n";
-				$sql = "select * from scrapper_users where baneado != 1 order by fecha_ultima_actividad";
+			while($gotcha){
+				$sql = "select * from scrapper_users where en_uso = 0 and baneado = 0 and dormido = 0 order by fecha_ultima_actividad";
 				$queryResult = $this->db->query($sql);
+				if($queryResult->num_rows < 1){
+					echo "TODOS LOS USUARIOS ESTAN EN USO\n";
+					/*$sql = "select * from scrapper_users where baneado != 1 order by fecha_ultima_actividad";
+					$queryResult = $this->db->query($sql);*/
+					sleep(3600);
+
+
+				}else{
+					$gotcha = false;
+				}
 			}
 
 			$data = array();
@@ -443,7 +462,7 @@
 
 			$currentURL = $this->driver->getCurrentURL();
 
-			if(strpos($currentURL, 'challenge') !== false){
+			if(strpos($currentURL, 'challenge') !== false || strpos($currentURL, 'restriction') !== false){
 
 				echo "BANEADO\n";
 			}else{
@@ -483,12 +502,25 @@
 
 			$queryResult = $this->db->query($queryfecha);
 
-			global $fecha_fi, $fecha_ini;
+			global $fecha_fi, $fecha_ini, $global_rep;
 
 			foreach ($queryResult as $r) {
 				$fecha_ini = $r['fecha_ini'];
 				$fecha_fi = $r['fecha_final'];
 			}
+
+			$dteStart = new DateTime($fecha_ini);
+   			$dteEnd   = new DateTime($fecha_fi);
+
+   			$dteDiff  = $dteStart->diff($dteEnd);
+   			$dteFinal = $dteDiff->format("%a");
+
+   			if($dteFinal < 8){
+   				$global_rep = 5;
+   			}
+
+
+
 		}
 
 
@@ -585,14 +617,14 @@
 				$dateres = date('Y-m-d H:i:s', strtotime($datetime));		
 				$date = new DateTime($dateres);
 				$idExterno = $date->getTimestamp();
-				global $fecha_fi, $fecha_ini;
+				global $fecha_fi, $fecha_ini, $global_rep;
 				$datefinal = $fecha_fi." 23:59:59";
 				$dateini = $fecha_ini." 00:00:00";
 				echo "FECHA INICIO: ".$dateini." | FECHA DEL POST: ".$dateres."\n";
 
 				//SI NO ESTA ENTRE LAS FECHAS SELECCIONADAS SE LO SALTA O ACABA SI SE PASA
 				if($dateres < $dateini){
-					if ($cuantosFechaFuera < 20){ 
+					if ($cuantosFechaFuera < $global_rep){ 
 						$cuantosFechaFuera++;
 						$this->driver->findElement(WebDriverBy::cssSelector("svg[aria-label='Cerrar']"))->click();
 						echo "Seguimos\n";

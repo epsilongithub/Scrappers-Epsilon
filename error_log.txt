@@ -1,0 +1,12 @@
+Facebook\WebDriver\Exception\UnrecognizedExceptionException: invalid argument: 'value' must be a list
+  (Session info: chrome=89.0.4389.128)
+  (Driver info: chromedriver=89.0.4389.23 (61b08ee2c50024bab004e48d2b1b083cdbdac579-refs/branch-heads/4389@{#294}),platform=Windows NT 10.0.19041 x86_64) in C:\Users\Tech\Documents\Scraper\vendor\facebook\webdriver\lib\Exception\WebDriverException.php:158
+Stack trace:
+#0 C:\Users\Tech\Documents\Scraper\vendor\facebook\webdriver\lib\Remote\HttpCommandExecutor.php(331): Facebook\WebDriver\Exception\WebDriverException::throwException(61, 'invalid argumen...', Array)
+#1 C:\Users\Tech\Documents\Scraper\vendor\facebook\webdriver\lib\Remote\RemoteWebDriver.php(565): Facebook\WebDriver\Remote\HttpCommandExecutor->execute(Object(Facebook\WebDriver\Remote\WebDriverCommand))
+#2 C:\Users\Tech\Documents\Scraper\vendor\facebook\webdriver\lib\Remote\RemoteExecuteMethod.php(40): Facebook\WebDriver\Remote\RemoteWebDriver->execute('sendKeysToEleme...', Array)
+#3 C:\Users\Tech\Documents\Scraper\vendor\facebook\webdriver\lib\Remote\RemoteWebElement.php(332): Facebook\WebDriver\Remote\RemoteExecuteMethod->execute('sendKeysToEleme...', Array)
+#4 C:\Users\Tech\Documents\Scraper\instagram-public-posts.php(816): Facebook\WebDriver\Remote\RemoteWebElement->sendKeys('tupadremelaense...')
+#5 C:\Users\Tech\Documents\Scraper\instagram-public-posts.php(172): Facebook\WebDriver\InstagramScraper->firstlogin('pablogarcia2646', 'tupadremelaense...')
+#6 C:\Users\Tech\Documents\Scraper\instagram-public-posts.php(1088): Facebook\WebDriver\InstagramScraper->run('2')
+#7 {main}
