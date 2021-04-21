@@ -194,23 +194,7 @@
 		}
 
 			//$this->syncBrandByContent();
-		
-
-					
-		}
-
-		function taggedPage(){
-
-			$eti = $this->driver->findElements(WebDriverBy::cssSelector("a[class='".TAGGED_CLASS."']"));
-			foreach ($eti as $isit) {
-				$linky = $isit->getAttribute("href");
-				if(strpos($linky, 'tagged') !== false){
-					$isit->click();
-					break;
-				}
-			}
-			
-
+				
 		}
 
 		function getFechasCargas($id){
