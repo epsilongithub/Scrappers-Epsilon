@@ -1117,9 +1117,9 @@
 
 	} catch (Exception $e) {
 		echo "No se ha podido cargar la sesion\n";
-		$handle = fopen("error_log.txt", "w");
+		/*$handle = fopen("error_log.txt", "w");
 		fwrite($handle, $e);
-		fclose($handle);
+		fclose($handle);*/
 		echo $e->getMessage(), "\n";
 	}
 ?>
