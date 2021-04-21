@@ -387,7 +387,7 @@
 				$errorwait = $this->driver->findElements(WebDriverBy::cssSelector("body[class='".BAN_WAIT_CLASS."']"));	
 				if(count($errorwait) <= 0){
 					echo "NO BANEADO\n";
-					return 0;
+					return 2;
 				}
 				else echo "BANEADO POR WAIT...\n";
 			}
