@@ -173,20 +173,17 @@
 			$this->firstlogin($user,$passwd);
 
 			while ($varBaneado == 1) {
+				$this->randomSleep();
 				$varBaneado = $this->baneadito($id_user);
+				echo "VARBANEADO = ".$varBaneado."\n";
 				if($varBaneado == 1){
-					$this->logout();
-					$credenciales = $this->get_user();
-
-					$user = $credenciales["user"];
-					$passwd = $credenciales["password"];
-					$id_user = $credenciales["id_user"];
-
-					$this->login($user,$passwd);
+					$this->driver->close();
+					passthru("php C:\Users\Tech\Documents\Scraper\instagram-public-posts_restroespectiva.php");
 				}
 			}
 
 			while($var){
+				$contadorPerfilesMal = 0;
 				$urls = $this->getCompaniesUrls($id_maquina);
 				if($urls == -1){
 
@@ -202,9 +199,21 @@
 					$urlprofile = "https://www.instagram.com/".$urlindiv;
 					$posts = array();
 
-					try{
+					$this->randomSleep();
+					$this->driver->get($urlprofile);
+
+					while ($varBaneado == 1) {
 						$this->randomSleep();
-						$this->driver->get($urlprofile);
+						$varBaneado = $this->baneadito($id_user);
+						echo "VARBANEADO = ".$varBaneado."\n";
+						if($varBaneado == 1){
+							$this->driver->close();
+							passthru("php C:\Users\Tech\Documents\Scraper\instagram-public-posts_restroespectiva.php");
+						}
+					}
+
+					try{
+
 						$this->randomSleep();
 						$posts = $this->scrapPosts($id, $urlindiv,$id_user);
 
@@ -226,8 +235,8 @@
 					}*/
 
 					$this->syncBrandByProfile($id);
-					$this->borrarCola($id);
 					$this->insertLog($id,$id_maquina,1,$id_log,$id_user);
+					$contadorPerfilesMal = $this->borrarCola($id, $id_maquina, $id_log, $contadorPerfilesMal, $id_user);
 				}
 				//$this->syncBrandByContent();
 			}
@@ -319,13 +328,19 @@
 		function get_user($id_maquina){
 			//Obtiene el primer usuario que este libre y NO baneado y siempre sera el que tenga la fecha de ultima actividad mas antigua. En caso
 			//de que todos los usuarios esten ocupados obtendremos el ultimo usuario utilizado y sin banear.
+			$gotcha = true;
 
-			$sql = "select * from scrapper_users where en_uso = 0 and baneado != 1 order by fecha_ultima_actividad";
-			$queryResult = $this->db->query($sql);
-			if($queryResult->num_rows < 1){
-				echo "TODOS LOS USUARIOS ESTAN EN USO";
-				$sql = "select * from scrapper_users where baneado != 1 order by fecha_ultima_actividad";
+			while($gotcha){
+				$sql = "select * from scrapper_users where en_uso = 0 and baneado = 0 and dormido = 0 order by fecha_ultima_actividad";
 				$queryResult = $this->db->query($sql);
+				if($queryResult->num_rows < 1){
+					echo "TODOS LOS USUARIOS ESTAN EN USO";
+					sleep(3600);
+					/*$sql = "select * from scrapper_users where baneado != 1 order by fecha_ultima_actividad";
+					$queryResult = $this->db->query($sql);*/
+				}else{
+					$gotcha = false;
+				} 
 			}
 
 			$data = array();
@@ -347,20 +362,20 @@
 		}
 
 		function baneadito($id){
-			try {
-				$this->driver->findElement(WebDriverBy::xpath("div[class='".BAN_CLASS."']"));
-			} catch (Exception $e) {
-				
-				try {
-					$this->driver->findElement(WebDriverBy::xpath("h3[class='".CUENTA_PENDIENTE_SMS."']"));
-				} catch (Exception $e) {
-					echo "NO ESTA BANEADO\n";
-					return 0;
-				}
+			sleep(3);
+
+			$currentURL = $this->driver->getCurrentURL();
+
+			if(strpos($currentURL, 'challenge') !== false || strpos($currentURL, 'restriction') !== false){
+
+				echo "BANEADO\n";
+			}else{
+				echo "NO BANEADO\n";
+				return 0;
 			}
 
 			echo "OPPSS! Tiene pinta de que han baneado al usuario\n";
-			$actualizar_ultima_gestion = "UPDATE scrapper_users SET fecha_baneado = '".date('Y-m-d H:i:s')."', baneado = 1, contador_baneos = contador_baneos+1, en_uso = 1 WHERE id=".$id;
+			$actualizar_ultima_gestion = "UPDATE scrapper_users SET fecha_baneado = '".date('Y-m-d H:i:s')."', baneado = 1, contador_baneos = contador_baneos+1, en_uso = 0 WHERE id=".$id;
 			if(!$this->db->query($actualizar_ultima_gestion)) {
 				echo "Error updating en la base de datos\n";
 				echo "ERROR: ", $this->db->error, "\n";
@@ -369,15 +384,78 @@
 			return 1;
 		}
 
-		function borrarCola($id){
+		function borrarCola($id, $idmaq, $idlog, $contador, $idUser){
 
 			echo "QUE TE VOY A BORRARRR\n";
 
-			$queryborro = "DELETE FROM ".TABLA_COLAS." WHERE id_profile = ".$id."";
+			$querylog = "SELECT * FROM ".TABLA_LOG." WHERE id = '".$idlog."'";
 
-			if(!$this->db->query($queryborro)) {
-					echo "Error deleting en la base de datos\n";
+			$queryResult = $this->db->query($querylog);
+		
+			foreach ($queryResult as $r) {
+				$fecha = $r['fecha_ini'];
+			}
+
+			$dteStart = new DateTime($fecha);
+   			$dteEnd   = new DateTime('now');
+
+   			$dteDiff  = $dteStart->diff($dteEnd);
+   			$dteFinal = $dteDiff->format("%H:%I:%S");
+
+   			echo "\nEl perfil ha tardado: ".$dteFinal."\n";
+
+   			if ($dteFinal < "00:00:45") {
+
+   				echo "Menos del minimo\n";
+   				$contador++;
+
+
+   				$qUpdateCola = "UPDATE ".TABLA_COLAS." SET bloqueado = 0, orden = 99 WHERE id_profile = ".$id."";
+   				if(!$this->db->query($qUpdateCola)) {
+					echo "Error update en la base de datos\n";
 					echo "ERROR: ", $this->db->error, "\n";
+				}
+
+				$qUpdateLog = "UPDATE ".TABLA_LOG." SET fecha_fin=now(), duracion=timediff(fecha_fin,fecha_ini), descripcion='(POSIBLE ERROR) FINALIZAMOS EL PERFIL ".$id." EN LA MAQUINA ".$idmaq."' where id=".$idlog."";
+				if(!$this->db->query($qUpdateLog)) {
+					echo "Error update en la base de datos\n";
+					echo "ERROR: ", $this->db->error, "\n";
+				}
+
+				/*
+				$selectMaquinas = "SELECT COUNT(*) as apagadas FROM scrapper_maquinas WHERE tipo_maquina = 1 AND apagada = 1";
+
+				$queryResult2 = $this->db->query($selectMaquinas);
+						
+				foreach ($queryResult2 as $r2) {
+					$numOff = $r2['apagadas'];
+				}*/
+
+				if($contador >= 5){
+					$qApagar = "UPDATE scrapper_maquinas SET apagada = 1 WHERE id=".$idmaq."";
+					if(!$this->db->query($qApagar)) {
+						echo "Error update en la base de datos\n";
+						echo "ERROR: ", $this->db->error, "\n";
+					}
+
+					$qUser = "UPDATE scrapper_users SET en_uso = 0 WHERE id = ".$idUser."";
+					if(!$this->db->query($qUser)) {
+						echo "Error update en la base de datos\n";
+						echo "ERROR: ", $this->db->error, "\n";
+					}
+
+					$this->driver->close();
+					exit;
+				}
+
+   			}else{
+
+				$queryborro = "DELETE FROM ".TABLA_COLAS." WHERE id_profile = ".$id."";
+
+				if(!$this->db->query($queryborro)) {
+						echo "Error deleting en la base de datos\n";
+						echo "ERROR: ", $this->db->error, "\n";
+				}
 			}
 
 
@@ -460,6 +538,12 @@
 					else continue;
 				
 					$this->randomSleep();
+
+					try {
+						$typeOfPost = $posting->findElement(WebDriverBy::cssSelector("svg[class='_8-yf5 ']"))->getAttribute("aria-label");
+					} catch (Exception $e) {
+						$typeOfPost = "photo";
+					}
 
 					$this->driver->getMouse()->mouseMove($posting->getCoordinates());
 					$metricas = $posting->findElements(WebDriverBy::cssSelector("li[class='".COMMENTSYLIKES."']"));
@@ -544,7 +628,7 @@
 						if(strpos($likes, 'k') !== false || $likes == 0){
 							
 							$pasouno = $this->driver->findElement(WebDriverBy::cssSelector("div[class='".LIKES_DIV_CLASSNAME."']"));
-							$pasodos = $pasouno->findElement(WebDriverBy::xpath('.//button'));	
+							$pasodos = $pasouno->findElement(WebDriverBy::xpath('.//a'));	
 							$likes = $pasodos->findElement(WebDriverBy::xpath('.//span'))->getText();
 							/*
 							$pasouno = $this->driver->findElement(WebDriverBy::cssSelector("span[class='".VIDEO_CLASSNAME."']"));
@@ -553,15 +637,20 @@
 							$pasodos = $this->driver->findElement(WebDriverBy::cssSelector("div[class='".DIV_LIKEVIDEO."']"));
 							$likes = $pasodos->findElement(WebDriverBy::xpath('.//span'))->getText();*/
 						}
-						$imgdiv = $this->driver->findElement(WebDriverBy::cssSelector("div[class='".IMGPOST."']"));
-						$imgdiv2 = $imgdiv->findElement(WebDriverBy::xpath('.//div'));
-						$img = $imgdiv2->findElement(WebDriverBy::xpath('.//img'))->getAttribute("src");
+						if($typeOfPost == "photo"){
+							$imgdiv = $this->driver->findElement(WebDriverBy::cssSelector("div[class='".IMGPOST."']"));
+							$imgdiv2 = $imgdiv->findElement(WebDriverBy::xpath('.//div'));
+							$img = $imgdiv2->findElement(WebDriverBy::xpath('.//img'))->getAttribute("src");
+						}
 					}
 					catch (Exception $e) {
 						//echo 'Mensaje de error: ', $e->getMessage(), "\n";
 					}
 
-					if($img == ""){
+					if($typeOfPost == "Secuencia"){
+
+						$type = "carousel_album";
+
 						try {
 							$imgdiv = $this->driver->findElement(WebDriverBy::cssSelector("div[class='".IMGPOST_CAR."']"));
 							$imgdiv2 = $imgdiv->findElement(WebDriverBy::xpath('.//div'));
@@ -574,25 +663,29 @@
 					}
 
 
+
 					echo "LIKES:".$likes."\n"; echo "COMMENTS:".$comment."\n";
 
 					
-					try {
+					if($typeOfPost == "IGTV" || $typeOfPost == "Vídeo"){
+						try {
 						$sera = $this->driver->findElement(WebDriverBy::cssSelector("div[class='".IS_VIDEO."']"));
 						$seravideo = $sera->getText();
 
-						if(strpos($seravideo, 'reproducciones') !== false){
-
-							$img = $this->driver->findElement(WebDriverBy::cssSelector("video[class='".VIDEOPOST."']"))->getAttribute("poster");
-							//echo "SOY UN VIDEO:".$img."\n";
+						$img = $this->driver->findElement(WebDriverBy::cssSelector("video[class='".VIDEOPOST."']"))->getAttribute("poster");
+						//echo "SOY UN VIDEO:".$img."\n";
+						if($typeOfPost == "IGTV"){
+							$type = "video-igtv";
+						}else{
 							$type = "video-preview";
+						}
 
-							$repro1 = $sera->findElement(WebDriverBy::xpath('.//span'));
-							if(strpos($likes, 'k') !== false || strpos($likes, 'mm') !== false || $likes == 0){
-								$likes = $repro1->findElement(WebDriverBy::xpath('.//span'))->getText();						
-							}
-							$repros = $likes;
-							echo "REPRODUCCIONES:".$repros."\n";
+						$repro1 = $sera->findElement(WebDriverBy::xpath('.//span'));
+						if(strpos($likes, 'k') !== false || strpos($likes, 'mm') !== false || $likes == 0){
+							$likes = $repro1->findElement(WebDriverBy::xpath('.//span'))->getText();						
+						}
+						$repros = $likes;
+						echo "REPRODUCCIONES:".$repros."\n";
 
 						$repro1->click();
 						$this->randomSleep();
@@ -605,13 +698,26 @@
 							$likesu = explode(" ", $likeVideoDiv);
 							$likes = $likesu[0];
 						}
-							echo "LIKES DE VIDEO:".$likes."\n";
+						echo "LIKES DE VIDEO:".$likes."\n";
 
-							$this->driver->findElement(WebDriverBy::cssSelector("div[class='".CLOSE_LIKESVIDEO."']"))->click();
-						}	
+						$this->driver->findElement(WebDriverBy::cssSelector("div[class='".CLOSE_LIKESVIDEO."']"))->click();
 					} 
 					catch (Exception $e) {
 						//echo 'Mensaje de error: ', $e->getMessage(), "\n";
+					}
+
+					}
+					
+					
+					if($typeOfPost == "Clip"){
+						try {
+							$img = $this->driver->findElement(WebDriverBy::cssSelector("video[class='".VIDEOPOST."']"))->getAttribute("poster");
+						} catch (Exception $e) {
+							
+						}
+						
+						$type = "video-reel";
+
 					}
 
 					$this->randomSleep();
@@ -673,6 +779,7 @@
 			if(!$this->db->ping()){
 				echo "\n No tenemos conexion a la BD. Volveremos en 8 minutos";
 				sleep(480);
+				$this->driver->close();
 				passthru("php C:\Users\Tech\Documents\Scraper\instagram-public-posts_restroespectiva.php");
 			}
 
@@ -724,6 +831,9 @@
 		function login($user,$passwd) {
 			echo "Voy a volver a loggearme \n";
 			$this->driver->get(LOGIN_URL);
+			$this->driver->wait()->until(
+						WebDriverExpectedCondition::visibilityOfElementLocated(WebDriverBy::cssSelector("div[class='K-1uj Z7p_S']"))
+					);
 
 			$this->randomSleep();
 
