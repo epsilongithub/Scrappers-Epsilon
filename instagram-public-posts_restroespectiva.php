@@ -540,7 +540,7 @@
 					$this->randomSleep();
 
 					try {
-						$typeOfPost = $posting->findElement(WebDriverBy::xpath('.//svg'))->getAttribute("aria-label");
+						$typeOfPost = $posting->findElement(WebDriverBy::cssSelector("svg[class='_8-yf5 ']"))->getAttribute("aria-label");
 					} catch (Exception $e) {
 						$typeOfPost = "photo";
 					}

@@ -68,7 +68,7 @@
 	const TABLA_COLAS = 'instagram_paid_cola';
 	const TABLA_LOG = 'scrapper_ig_log_profiles';
 	const BAN_CLASS = 'vqibd  wNNoj ';
-	const BAN_WAIT_CLASS = 'p-error dialog-404';
+	const BAN_WAIT_CLASS = ' p-error dialog-404';
 
 	date_default_timezone_set('Europe/Madrid');
 
@@ -383,10 +383,16 @@
 
 				echo "BANEADO\n";
 			}else{
-				echo "NO BANEADO\n";
-				return 0;
+				//Hem de buscar si hi ha les classes de baneado ANTIGUES, afegida la de Espera unos minutos antes de volver a intentarlo.
+				$errorwait = $this->driver->findElements(WebDriverBy::cssSelector("body[class='".BAN_WAIT_CLASS."']"));	
+				if(count($errorwait) <= 0){
+					echo "NO BANEADO\n";
+					return 0;
+				}
+				else echo "BANEADO POR WAIT...\n";
 			}
 
+			
 			echo "OPPSS! Tiene pinta de que han baneado al usuario\n";
 			$actualizar_ultima_gestion = "UPDATE scrapper_users SET fecha_baneado = '".date('Y-m-d H:i:s')."', baneado = 1, contador_baneos = contador_baneos+1, en_uso = 0 WHERE id=".$id;
 			if(!$this->db->query($actualizar_ultima_gestion)) {
@@ -553,10 +559,13 @@
 					$this->randomSleep();
 
 					try {
-						$typeOfPost = $posting->findElement(WebDriverBy::xpath('.//svg'))->getAttribute("aria-label");
+						$typeOfPost = $posting->findElement(WebDriverBy::cssSelector("svg[class='_8-yf5 ']"))->getAttribute("aria-label");
 					} catch (Exception $e) {
+						//echo $e;
 						$typeOfPost = "photo";
 					}
+
+					echo "\nSOY UN POST DE TIPO: ".$typeOfPost."\n";
 			
 					$this->driver->getMouse()->mouseMove($posting->getCoordinates());
 					$metricas = $posting->findElements(WebDriverBy::cssSelector("li[class='".COMMENTSYLIKES."']"));
