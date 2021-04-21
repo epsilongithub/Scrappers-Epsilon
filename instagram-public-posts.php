@@ -18,7 +18,7 @@
 	$fecha_fi = "2020-12-20";
 
 
-	const LOGIN_URL = 'https://www.instagram.com/accounts/login/';
+	const LOGIN_URL = 'https://www.instagram.com';
 	
 	//const USERNAME = 'sat@tech-impulse.com';
 	//const PASSWORD = 'Timpulse02';
@@ -165,6 +165,19 @@
 		function run($id_maquina) {
 			$var = true;
 			$varBaneado = 1;
+
+
+			/*$this->driver->get("http://www.google.com");
+			sleep(5);
+			echo "google\n";
+			$this->driver->close();
+			sleep(5);
+			echo "bye\n";
+			passthru("php C:\Users\Tech\Documents\Scraper\instagram-public-posts.php");
+			sleep(5);
+			echo "vuelta a comenzar\n";*/
+
+
 
 			$credenciales = $this->get_user($id_maquina);
 			$user = $credenciales["user"];
