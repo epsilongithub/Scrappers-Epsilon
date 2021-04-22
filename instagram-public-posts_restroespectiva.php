@@ -18,7 +18,7 @@
 	$fecha_fi = "2020-12-20";
 
 
-	const LOGIN_URL = 'https://www.instagram.com/accounts/login/';
+	const LOGIN_URL = 'https://www.instagram.com';
 	
 	//const USERNAME = 'sat@tech-impulse.com';
 	//const PASSWORD = 'Timpulse02';
