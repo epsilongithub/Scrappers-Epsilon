@@ -459,6 +459,9 @@
 			}
 
 
+			return $contador;
+
+
 		}
 
 		function getFechasCargas($id){
