@@ -391,29 +391,42 @@
 			sleep(3);
 
 			$currentURL = $this->driver->getCurrentURL();
+			$esperar = 0;
 
 			if(strpos($currentURL, 'challenge') !== false || strpos($currentURL, 'restriction') !== false){
 
 				echo "BANEADO\n";
-			}else{
-				//Hem de buscar si hi ha les classes de baneado ANTIGUES, afegida la de Espera unos minutos antes de volver a intentarlo.
-				$errorwait = $this->driver->findElements(WebDriverBy::cssSelector("body[class='".BAN_WAIT_CLASS."']"));	
-				if(count($errorwait) <= 0){
-					echo "NO BANEADO\n";
-					return 2;
+				echo "OPPSS! Tiene pinta de que han baneado al usuario\n";
+				$actualizar_ultima_gestion = "UPDATE scrapper_users SET fecha_baneado = '".date('Y-m-d H:i:s')."', baneado = 1, contador_baneos = contador_baneos+1, en_uso = 0 WHERE id=".$id;
+				if(!$this->db->query($actualizar_ultima_gestion)) {
+					echo "Error updating en la base de datos\n";
+					echo "ERROR: ", $this->db->error, "\n";
 				}
-				else echo "BANEADO POR WAIT...\n";
+
+				return 1;
+
+			}else{
+				while($esperar == 0){
+					$errorwait = $this->driver->findElements(WebDriverBy::cssSelector("body[class='".BAN_WAIT_CLASS."']"));	
+					if(count($errorwait) <= 0){
+						echo "NO BANEADO\n";
+						return 0;
+					}else{
+						else echo "BANEADO POR WAIT...\n";
+						sleep(1800);
+						$this->driver->navigate()->refresh();
+						sleep(3);
+						$urlnow = $this->driver->getCurrentURL();
+						if($urlnow != $currentURL){
+							$this->driver->get($currentURL);
+						}
+					}
+				}
+								
 			}
 
 			
-			echo "OPPSS! Tiene pinta de que han baneado al usuario\n";
-			$actualizar_ultima_gestion = "UPDATE scrapper_users SET fecha_baneado = '".date('Y-m-d H:i:s')."', baneado = 1, contador_baneos = contador_baneos+1, en_uso = 0 WHERE id=".$id;
-			if(!$this->db->query($actualizar_ultima_gestion)) {
-				echo "Error updating en la base de datos\n";
-				echo "ERROR: ", $this->db->error, "\n";
-			}
-
-			return 1;
+			
 		}
 
 		function borrarCola($id, $idmaq, $idlog, $contador, $idUser){
