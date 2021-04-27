@@ -470,7 +470,7 @@
 						echo "NO BANEADO\n";
 						return 0;
 					}else{
-						else echo "BANEADO POR WAIT...\n";
+						echo "BANEADO POR WAIT...\n";
 						sleep(1800);
 						$this->driver->navigate()->refresh();
 						sleep(3);
