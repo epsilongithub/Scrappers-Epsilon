@@ -55,7 +55,8 @@
 	const IMGPOST = 'eLAPa _23QFA';
 	//const IMGPOST = 'eLAPa kPFhm';
 	const IMGPOST_CAR = 'eLAPa RzuR0';
-	const VIDEOPOST = 'tWeCl';
+	const VIDEOPOSTOLD = 'tWeCl';
+	const VIDEOPOST = 'Q9bIO'; 
 
 	const TAGGED_CLASS = '_9VEo1 ';
 
