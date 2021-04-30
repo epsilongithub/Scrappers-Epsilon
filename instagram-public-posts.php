@@ -56,7 +56,8 @@
 	const IMGPOST_OLD = 'eLAPa _23QFA';
 	const IMGPOST = 'eLAPa kPFhm';
 	const IMGPOST_CAR = 'eLAPa RzuR0';
-	const VIDEOPOST = 'tWeCl';
+	const VIDEOPOSTOLD = 'tWeCl';
+	const VIDEOPOST = 'Q9bIO'; 
 
 	const DIV_LIKEVIDEO = 'vJRqr';
 
@@ -583,8 +584,10 @@
 
 					if (!in_array($urldelpost, $urlpostarray)) $urlpostarray[] = $urldelpost;
 					else continue;
-				
-					$this->randomSleep();
+
+					$this->driver->wait()->until(
+						WebDriverExpectedCondition::visibilityOfElementLocated(WebDriverBy::cssSelector("svg[class='_8-yf5 ']"))
+					);
 
 					try {
 						$typeOfPost = $posting->findElement(WebDriverBy::cssSelector("svg[class='_8-yf5 ']"))->getAttribute("aria-label");
@@ -697,6 +700,9 @@
 						//echo 'Mensaje de error: ', $e->getMessage(), "\n";
 					}
 
+
+
+
 					if($typeOfPost == "Secuencia"){
 
 						$type = "carousel_album";
@@ -717,42 +723,50 @@
 
 					if($typeOfPost == "IGTV" || $typeOfPost == "Vídeo"){
 						try {
-						$sera = $this->driver->findElement(WebDriverBy::cssSelector("div[class='".IS_VIDEO."']"));
-						$seravideo = $sera->getText();
 
-						$img = $this->driver->findElement(WebDriverBy::cssSelector("video[class='".VIDEOPOST."']"))->getAttribute("poster");
-						//echo "SOY UN VIDEO:".$img."\n";
-						if($typeOfPost == "IGTV"){
-							$type = "video-igtv";
-						}else{
-							$type = "video-preview";
+							$this->driver->wait()->until(
+								WebDriverExpectedCondition::visibilityOfElementLocated(WebDriverBy::cssSelector("div[class='".IS_VIDEO."']"))
+							);
+
+							$sera = $this->driver->findElement(WebDriverBy::cssSelector("div[class='".IS_VIDEO."']"));
+							$seravideo = $sera->getText();
+
+							$img = $this->driver->findElement(WebDriverBy::cssSelector("video[class='".VIDEOPOST."']"))->getAttribute("poster");
+							//echo "SOY UN VIDEO:".$img."\n";
+							if($typeOfPost == "IGTV"){
+								$type = "video-igtv";
+							}else{
+								$type = "video-preview";
+							}
+
+							$this->randomSleep();
+
+							$repro1 = $sera->findElement(WebDriverBy::xpath('.//span'));
+							//if(strpos($likes, 'k') !== false || strpos($likes, 'mm') !== false || $likes == 0){
+							$likes = $repro1->findElement(WebDriverBy::xpath('.//span'))->getText();	
+
+							//}
+							$repros = $likes;
+							echo "REPRODUCCIONES:".$repros."\n";
+
+							$repro1->click();
+							$this->randomSleep();
+							try {
+								$likeVideoDiv = $this->driver->findElement(WebDriverBy::cssSelector("div[class='".LIKESVIDEO."']"));
+								$likes = $likeVideoDiv->findElement(WebDriverBy::xpath('.//span'))->getText();
+							
+							} catch (Exception $e) {
+								$likeVideoDiv = $this->driver->findElement(WebDriverBy::cssSelector("div[class='".LIKESVIDEO."']"))->getText();
+								$likesu = explode(" ", $likeVideoDiv);
+								$likes = $likesu[0];
+							}
+							echo "LIKES DE VIDEO:".$likes."\n";
+
+							$this->driver->findElement(WebDriverBy::cssSelector("div[class='".CLOSE_LIKESVIDEO."']"))->click();
+						} 
+						catch (Exception $e) {
+							echo 'Mensaje de error: ', $e->getMessage(), "\n";
 						}
-
-						$repro1 = $sera->findElement(WebDriverBy::xpath('.//span'));
-						if(strpos($likes, 'k') !== false || strpos($likes, 'mm') !== false || $likes == 0){
-							$likes = $repro1->findElement(WebDriverBy::xpath('.//span'))->getText();						
-						}
-						$repros = $likes;
-						echo "REPRODUCCIONES:".$repros."\n";
-
-						$repro1->click();
-						$this->randomSleep();
-						try {
-							$likeVideoDiv = $this->driver->findElement(WebDriverBy::cssSelector("div[class='".LIKESVIDEO."']"));
-							$likes = $likeVideoDiv->findElement(WebDriverBy::xpath('.//span'))->getText();
-						
-						} catch (Exception $e) {
-							$likeVideoDiv = $this->driver->findElement(WebDriverBy::cssSelector("div[class='".LIKESVIDEO."']"))->getText();
-							$likesu = explode(" ", $likeVideoDiv);
-							$likes = $likesu[0];
-						}
-						echo "LIKES DE VIDEO:".$likes."\n";
-
-						$this->driver->findElement(WebDriverBy::cssSelector("div[class='".CLOSE_LIKESVIDEO."']"))->click();
-					} 
-					catch (Exception $e) {
-						//echo 'Mensaje de error: ', $e->getMessage(), "\n";
-					}
 
 					}
 					
