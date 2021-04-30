@@ -583,8 +583,10 @@
 
 					if (!in_array($urldelpost, $urlpostarray)) $urlpostarray[] = $urldelpost;
 					else continue;
-				
-					$this->randomSleep();
+
+					$this->driver->wait()->until(
+						WebDriverExpectedCondition::visibilityOfElementLocated(WebDriverBy::cssSelector("svg[class='_8-yf5 ']"))
+					);
 
 					try {
 						$typeOfPost = $posting->findElement(WebDriverBy::cssSelector("svg[class='_8-yf5 ']"))->getAttribute("aria-label");
@@ -695,7 +697,32 @@
 					}
 					catch (Exception $e) {
 						//echo 'Mensaje de error: ', $e->getMessage(), "\n";
+						try {
+						$sera = $this->driver->findElement(WebDriverBy::cssSelector("div[class='".IS_VIDEO."']"));
+						$repro1 = $sera->findElement(WebDriverBy::xpath('.//span'));
+						if(strpos($likes, 'k') !== false || strpos($likes, 'mm') !== false || $likes == 0){
+							$likes = $repro1->findElement(WebDriverBy::xpath('.//span'))->getText();						
+						}
+						$repros = $likes;
+						$repro1->click();
+						$this->randomSleep();
+						try {
+							$likeVideoDiv = $this->driver->findElement(WebDriverBy::cssSelector("div[class='".LIKESVIDEO."']"));
+							$likes = $likeVideoDiv->findElement(WebDriverBy::xpath('.//span'))->getText();
+						
+						} catch (Exception $e) {
+							$likeVideoDiv = $this->driver->findElement(WebDriverBy::cssSelector("div[class='".LIKESVIDEO."']"))->getText();
+							$likesu = explode(" ", $likeVideoDiv);
+							$likes = $likesu[0];
+						}
+						$this->driver->findElement(WebDriverBy::cssSelector("div[class='".CLOSE_LIKESVIDEO."']"))->click();
+					} catch (Exception $e) {
+						
 					}
+					}
+
+
+
 
 					if($typeOfPost == "Secuencia"){
 
