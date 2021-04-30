@@ -51,7 +51,8 @@
 	const LIKESVIDEO = 'vJRqr';
 	const CLOSE_LIKESVIDEO = 'QhbhU';
 	const IMGPOST = 'eLAPa _23QFA';
-	const VIDEOPOST = 'tWeCl';
+	const VIDEOPOSTOLD = 'tWeCl';
+	const VIDEOPOST = 'Q9bIO'; 
 
 	const TAGGED_CLASS = '_9VEo1 ';
 
