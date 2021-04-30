@@ -685,7 +685,8 @@
 
 						$repro1 = $sera->findElement(WebDriverBy::xpath('.//span'));
 						if(strpos($likes, 'k') !== false || strpos($likes, 'mm') !== false || $likes == 0){
-							$likes = $repro1->findElement(WebDriverBy::xpath('.//span'))->getText();						
+							$likes = $repro1->findElement(WebDriverBy::xpath('.//span'))->getText();
+							echo "reproducciones del video: ".$likes."<br>";						
 						}
 						$repros = $likes;
 						echo "REPRODUCCIONES:".$repros."\n";
