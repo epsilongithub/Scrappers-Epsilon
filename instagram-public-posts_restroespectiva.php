@@ -552,8 +552,10 @@
 					$this->driver->getMouse()->mouseMove($posting->getCoordinates());
 					$metricas = $posting->findElements(WebDriverBy::cssSelector("li[class='".COMMENTSYLIKES."']"));
 
-					if(count($metricas) > 0) $likes = $metricas[0]->getText();
-					else $likes = 0;
+					/*if(count($metricas) > 0) $likes = $metricas[0]->getText();
+					else $likes = 0;*/
+
+					$likes = 0;
 				
 					if(count($metricas) > 1) $comment = $metricas[1]->getText();
 					else $comment = 0;
@@ -629,7 +631,7 @@
 					}
 
 					try {
-						if(strpos($likes, 'k') !== false || $likes == 0){
+
 							
 							$pasouno = $this->driver->findElement(WebDriverBy::cssSelector("div[class='".LIKES_DIV_CLASSNAME."']"));
 							$pasodos = $pasouno->findElement(WebDriverBy::xpath('.//a'));	
@@ -640,7 +642,7 @@
 							$this->randomSleep();
 							$pasodos = $this->driver->findElement(WebDriverBy::cssSelector("div[class='".DIV_LIKEVIDEO."']"));
 							$likes = $pasodos->findElement(WebDriverBy::xpath('.//span'))->getText();*/
-						}
+				
 						if($typeOfPost == "photo"){
 							$imgdiv = $this->driver->findElement(WebDriverBy::cssSelector("div[class='".IMGPOST."']"));
 							$imgdiv2 = $imgdiv->findElement(WebDriverBy::xpath('.//div'));
@@ -673,43 +675,56 @@
 					
 					if($typeOfPost == "IGTV" || $typeOfPost == "Vídeo"){
 						try {
-						$sera = $this->driver->findElement(WebDriverBy::cssSelector("div[class='".IS_VIDEO."']"));
-						$seravideo = $sera->getText();
 
-						$img = $this->driver->findElement(WebDriverBy::cssSelector("video[class='".VIDEOPOST."']"))->getAttribute("poster");
-						//echo "SOY UN VIDEO:".$img."\n";
-						if($typeOfPost == "IGTV"){
-							$type = "video-igtv";
-						}else{
-							$type = "video-preview";
+							$this->driver->wait()->until(
+								WebDriverExpectedCondition::visibilityOfElementLocated(WebDriverBy::cssSelector("div[class='".IS_VIDEO."']"))
+							);
+
+							$sera = $this->driver->findElement(WebDriverBy::cssSelector("div[class='".IS_VIDEO."']"));
+							$seravideo = $sera->getText();
+							try {
+								$img = $this->driver->findElement(WebDriverBy::cssSelector("video[class='".VIDEOPOSTOLD."']"))->getAttribute("poster");
+							} catch (Exception $e) {
+								try {
+									$img = $this->driver->findElement(WebDriverBy::cssSelector("video[class='".VIDEOPOST."']"))->getAttribute("poster");
+								} catch (Exception $e) {
+									
+								}
+							}
+							
+							//echo "SOY UN VIDEO:".$img."\n";
+							if($typeOfPost == "IGTV"){
+								$type = "video-igtv";
+							}else{
+								$type = "video-preview";
+							}
+
+							$this->randomSleep();
+
+							$repro1 = $sera->findElement(WebDriverBy::xpath('.//span'));
+							//if(strpos($likes, 'k') !== false || strpos($likes, 'mm') !== false || $likes == 0){
+							$repros = $repro1->findElement(WebDriverBy::xpath('.//span'))->getText();	
+
+							echo "REPRODUCCIONES:".$repros."\n";
+
+							$repro1->click();
+							$this->randomSleep();
+							try {
+								$likeVideoDiv = $this->driver->findElement(WebDriverBy::cssSelector("div[class='".LIKESVIDEO."']"));
+								$likes = $likeVideoDiv->findElement(WebDriverBy::xpath('.//span'))->getText();
+							
+							} catch (Exception $e) {
+								$likeVideoDiv = $this->driver->findElement(WebDriverBy::cssSelector("div[class='".LIKESVIDEO."']"))->getText();
+								$likesu = explode(" ", $likeVideoDiv);
+								$likes = $likesu[0];
+							}
+							echo "LIKES DE VIDEO:".$likes."\n";
+
+							$this->driver->findElement(WebDriverBy::cssSelector("div[class='".CLOSE_LIKESVIDEO."']"))->click();
+						} 
+						catch (Exception $e) {
+							echo 'Mensaje de error: ', $e->getMessage(), "\n";
 						}
-
-						$repro1 = $sera->findElement(WebDriverBy::xpath('.//span'));
-						if(strpos($likes, 'k') !== false || strpos($likes, 'mm') !== false || $likes == 0){
-							$likes = $repro1->findElement(WebDriverBy::xpath('.//span'))->getText();
-							echo "reproducciones del video: ".$likes."<br>";						
-						}
-						$repros = $likes;
-						echo "REPRODUCCIONES:".$repros."\n";
-
-						$repro1->click();
-						$this->randomSleep();
-						try {
-							$likeVideoDiv = $this->driver->findElement(WebDriverBy::cssSelector("div[class='".LIKESVIDEO."']"));
-							$likes = $likeVideoDiv->findElement(WebDriverBy::xpath('.//span'))->getText();
-						
-						} catch (Exception $e) {
-							$likeVideoDiv = $this->driver->findElement(WebDriverBy::cssSelector("div[class='".LIKESVIDEO."']"))->getText();
-							$likesu = explode(" ", $likeVideoDiv);
-							$likes = $likesu[0];
-						}
-						echo "LIKES DE VIDEO:".$likes."\n";
-
-						$this->driver->findElement(WebDriverBy::cssSelector("div[class='".CLOSE_LIKESVIDEO."']"))->click();
-					} 
-					catch (Exception $e) {
-						//echo 'Mensaje de error: ', $e->getMessage(), "\n";
-					}
 
 					}
 					
@@ -1057,8 +1072,8 @@
 			}
 
 
-			if($likesAntiguos > $likesScrap){
-				$likesFinales = $likesAntiguos; 
+			if($likesScrap == 0){
+				$likesFinales = $likesAntiguos;
 			}else{
 				$likesFinales = $likesScrap;
 			}
