@@ -23,8 +23,8 @@
 	//const USERNAME = 'sat@tech-impulse.com';
 	//const PASSWORD = 'Timpulse03';
 	
-	const USERNAME = 'epsilon_technologies';
-	const PASSWORD = 'Epsilon2021';
+	//const USERNAME = 'orangu_tech';
+	// const PASSWORD = 'n6xJcLuNfP7FMA5';
 
 	const LOGIN_USERNAME_NAME = 'username';
 	const LOGIN_PASSWORD_NAME = 'password';
@@ -51,14 +51,14 @@
 	const LIKESVIDEO = 'vJRqr';
 	const CLOSE_LIKESVIDEO = 'QhbhU';
 	const IMGPOST = 'eLAPa _23QFA';
-	const VIDEOPOSTOLD = 'tWeCl';
-	const VIDEOPOST = 'Q9bIO'; 
+	const VIDEOPOST = 'tWeCl';
 
 	const TAGGED_CLASS = '_9VEo1 ';
 
 	const HASH_ALGORITHM = 'md5';
+	const BAN_CLASS = 'vqibd  wNNoj ';
 
-	const BLOQUE = '1';
+	const BLOQUE = '10';
 
 
 	/*
@@ -161,12 +161,32 @@
 		function run($id_maquina) { 
 
 			$urls = $this->getCompaniesUrls($id_maquina);
+			$varBaneado = 1;
 
 			if($urls == -1){
 
 			}else{
 
-			$this->firstlogin();
+			$credenciales = $this->get_user($id_maquina);
+			$user = $credenciales["user"];
+			$passwd = $credenciales["password"];
+			$id_user = $credenciales["id_user"];
+
+			$this->firstlogin($user,$passwd);
+
+			while ($varBaneado == 1) {
+				$varBaneado = $this->baneadito($id_user);
+				if($varBaneado == 1){
+					$this->logout();
+					$credenciales = $this->get_user($id_maquina);
+
+					$user = $credenciales["user"];
+					$passwd = $credenciales["password"];
+					$id_user = $credenciales["id_user"];
+
+					$this->login($user,$passwd);
+				}
+			}
 
 			//SCRAP ALL THE PHOTOS IN THE FEEDS
 			foreach ($urls as $id => $urlindiv) {	
@@ -195,7 +215,60 @@
 		}
 
 			//$this->syncBrandByContent();
-				
+		
+
+					
+		}
+
+		function get_user($id_maquina){
+			//Obtiene el primer usuario que este libre y NO baneado y siempre sera el que tenga la fecha de ultima actividad mas antigua. En caso
+			//de que todos los usuarios esten ocupados obtendremos el ultimo usuario utilizado y sin banear.
+
+			$sql = "select * from scrapper_users where en_uso = 0 and baneado != 1 order by fecha_ultima_actividad";
+			$queryResult = $this->db->query($sql);
+			if($queryResult->num_rows < 1){
+				echo "TODOS LOS USUARIOS ESTAN EN USO";
+				$sql = "select * from scrapper_users where baneado != 1 order by fecha_ultima_actividad";
+				$queryResult = $this->db->query($sql);
+			}
+
+			$data = array();
+			foreach ($queryResult as $valor) {
+				$data["user"] = $valor["usuario"];
+				$data["password"] = $valor["password"];
+				$data["id_user"] =$valor["id"];
+				break;
+			}
+
+			$actualizar_estado_user = "UPDATE scrapper_users SET en_uso = 1, maquina = ".$id_maquina.", fecha_ultima_actividad = '".date('Y-m-d H:i:s')."' WHERE id=".$data["id_user"];
+			if(!$this->db->query($actualizar_estado_user)) {
+				echo "Error updating en la base de datos\n";
+				echo "ERROR: ", $this->db->error, "\n";
+				return 1;
+			}
+			echo "Usuario Bloqueado";
+			return $data;
+		}
+
+
+		function baneadito($id){
+			try {
+				$this->driver->findElement(WebDriverBy::xpath("div[class='".BAN_CLASS."']"));
+			} catch (Exception $e) {
+				echo "NO ESTA BANEADO";
+				return 0;
+			}
+
+			echo "OPPSS! Tiene pinta de que han baneado al usuario";
+			$actualizar_ultima_gestion = "UPDATE scrapper_users SET fecha_baneado = '".date('Y-m-d H:i:s')."', baneado = 1, contador_baneos = contador_baneos+1, en_uso = 1 WHERE id=".$id;
+			if(!$this->db->query($actualizar_ultima_gestion)) {
+				echo "Error updating en la base de datos\n";
+				echo "ERROR: ", $this->db->error, "\n";
+			}
+
+			return 1;
+			
+
 		}
 
 		function getFechasCargas($id){
@@ -235,6 +308,7 @@
 			$cuantos = 0;
 			$cuantos2 = 0;
 			$cuantosAntiguo = 0;
+			$cuantosFechaFuera = 0;
 
 			while ($flagsortir) {
 				$cuantos2++;
@@ -340,14 +414,14 @@
 					//echo "FECHA CARGAS: ".$dateini."\n";
 					echo "fecha post actual ".$dateres." < fecha ini ".$dateini."? \n";
 
-					if($dateres <= "2019-01-01 00:00:00"){
-						$this->driver->findElement(WebDriverBy::cssSelector("svg[aria-label='Cerrar']"))->click();
-						continue;
-					}
-
 					//SI NO ESTA ENTRE LAS FECHAS SELECCIONADAS SE LO SALTA O ACABA SI SE PASA
 					if($dateres < $dateini){
 						if ($cuantos < 10) {
+							$this->driver->findElement(WebDriverBy::cssSelector("svg[aria-label='Cerrar']"))->click();
+							echo "Seguimos\n";
+							continue;
+						}else if($cuantosFechaFuera < 10){
+							$cuantosFechaFuera++;
 							$this->driver->findElement(WebDriverBy::cssSelector("svg[aria-label='Cerrar']"))->click();
 							echo "Seguimos\n";
 							continue;
@@ -357,10 +431,13 @@
 						break;
 					}else if($dateres > $datefinal){
 						//CERRAR POST
+						$cuantosFechaFuera = 0;
 						$this->driver->findElement(WebDriverBy::cssSelector("svg[aria-label='Cerrar']"))->click();
 						echo "Seguimos\n";
 						continue;
 					}
+
+					$cuantosFechaFuera = 0;
 
 					try {
 						$msg = $this->driver->findElement(WebDriverBy::cssSelector("div[class='".POST_MSG."']"));
@@ -371,7 +448,6 @@
 						$msgdeverda = "";
 					}
 					
-
 
 					$img = "";
 					$type = "photo";
@@ -479,7 +555,7 @@
 		/*
 		Inicia sesion en Instagram.
 		*/
-		function firstlogin() {
+		function firstlogin($user,$passwd) {
 			echo "Voy a loggearme por primera vez \n";
 			$this->driver->get(LOGIN_URL);
 
@@ -489,8 +565,25 @@
 
 			$this->randomSleep();
 			$login2 = $this->driver->findElements(WebDriverBy::cssSelector("input[class='".LOGIN_USERNAME_CLASSNAME."']"));
-			$login2[0]->sendKeys(USERNAME);
-			$login2[1]->sendKeys(PASSWORD)->submit();
+			$login2[0]->sendKeys($user);
+			$login2[1]->sendKeys($passwd)->submit();
+
+			$this->randomSleep();
+		}
+
+
+		function login($user,$passwd) {
+			echo "Voy a volver a loggearme \n";
+			$this->driver->get(LOGIN_URL);
+
+			$this->randomSleep();
+
+			$login2 = $this->driver->findElements(WebDriverBy::cssSelector("input[class='".LOGIN_USERNAME_CLASSNAME."']"));
+			$login2[0]->sendKeys($user);
+			$login2[1]->sendKeys($passwd)->submit();
+
+			//$login2[0]->sendKeys(USERNAME);
+			//$login2[1]->sendKeys(PASSWORD)->submit();
 
 			$this->randomSleep();
 		}
