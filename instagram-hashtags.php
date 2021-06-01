@@ -78,7 +78,7 @@
 		private $user;
 
 		function __construct($url, $idExterno, $numLikes, $img, $msg, $numComments, $type, $date, $username, $numViews=0) {
-			$this->url = $url;
+			$this->url = "https://www.instagram.com".$url;
 			$this->idExterno = $idExterno;
 			$this->numLikes = $numLikes;
 			$this->numViews = $numViews;

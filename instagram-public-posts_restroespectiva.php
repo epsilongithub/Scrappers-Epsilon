@@ -89,7 +89,7 @@
 		private $date;
 
 		function __construct($url, $idExterno, $numLikes, $img, $msg, $numComments, $type, $date, $numViews=0) {
-			$this->url = $url;
+			$this->url = "https://www.instagram.com".$url;
 			$this->idExterno = $idExterno;
 			$this->numLikes = $numLikes;
 			$this->numViews = $numViews;
@@ -599,8 +599,8 @@
 
 					try {
 						$msg = $this->driver->findElement(WebDriverBy::cssSelector("div[class='".POST_MSG."']"));
-						$msgdeverda = $msg->findElement(WebDriverBy::xpath('./span'))->getAttribute("innerText");
-
+						//$msgdeverda = $msg->findElement(WebDriverBy::xpath('./span'))->getAttribute("innerText");
+						$msgdeverda = $msg->findElement(WebDriverBy::xpath('./span'))->getText();
 						/*$pasouno = $this->driver->findElement(WebDriverBy::cssSelector("div[class='C7I1f X7jCj']"));
 						$pasodos = $pasouno->findElement(WebDriverBy::xpath(".//div[@class='C4VMK']"));
 						$msgdeverda = $pasodos->findElement(WebDriverBy::xpath(".//span[@class='']"))->getText();*/
