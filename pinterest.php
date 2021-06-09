@@ -11,7 +11,7 @@
 	use DateTime;
 	use DateTimeZone;
 
-	require_once('vendor/autoload.php');
+	require_once('../Scraper_old/vendor/autoload.php');
 
 	const LOGIN_URL = 'https://www.pinterest.es/login/';
 	const LOGOUT_URL = 'https://www.pinterest.es/logout/';
@@ -329,7 +329,7 @@
 					sleep(2);*/
 					try {
 						$urlPin = $posts2[$i]->findElement(WebDriverBy::xpath('.//a'))->getAttribute("href");
-						} catch (Exception $e) {
+					} catch (Exception $e) {
 						echo "NO HE PODIDO COGER EL POST NUMERO ".$i."\n";
 						echo $e."\n";
 						break;
@@ -350,10 +350,12 @@
 
 		           	}
 		           	$this->driver->switchTo()->window($this->driver->getWindowHandles()[1]);
-
+		           	//echo $urlPin;
 		           	sleep(2);
 		       
-		           	$this->driver->get($urlPin);
+		           	$newPinUrl = "https://www.pinterest.es".$urlPin;
+		       
+		           	$this->driver->get($newPinUrl);
 		           	$pinid =  explode('pin/', $urlPin);
 		           	$pinid2 = str_replace("/", "", $pinid[1]);
 
@@ -434,7 +436,7 @@
 
 			/*Cogemos el texto del Pin*/
 			if(array_key_exists('description', $pageInfo['pins'][$pinid])){
-				$descrip = $pageInfo['pins'][$pinid]['description'];
+				$descrip = $pageInfo['pins'][$pinid]['grid_title'];
 			}
 			echo "TEXT: ".$descrip."\n";
 
