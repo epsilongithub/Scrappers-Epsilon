@@ -539,7 +539,7 @@
 
 			while ($flagsortir) {
 				$posts2 = $this->driver->findElements(WebDriverBy::cssSelector("div[class='".POST_DIV."']"));			
-
+				$this->randomSleep();
 				$this->actualizar_actividad($id_user);
 
 				//$user_bloqueado = $this->driver->findElements(WebDriverBy::className("error-container"));
@@ -619,7 +619,7 @@
 					$this->driver->wait()->until(
 						WebDriverExpectedCondition::visibilityOfElementLocated(WebDriverBy::cssSelector("time[class='".POST_DATETIME."']"))
 					);
-
+					$this->randomSleep();
 					$divtime = $this->driver->findElement(WebDriverBy::cssSelector("time[class='".POST_DATETIME."']"));
 					$datetime = $divtime->getAttribute("datetime");
 					date_default_timezone_set('Europe/Madrid');
@@ -662,7 +662,7 @@
 
 					//echo "MESSAGE: ".$msgdeverda; 
 					//exit;
-					
+					$this->randomSleep();
 					$img = "";
 					$type = "photo";
 					$repros = 0;
@@ -718,6 +718,7 @@
 						catch (Exception $e) {
 							//echo 'Mensaje de error: ', $e->getMessage(), "\n";
 						}
+						$this->randomSleep();
 					}
 
 
@@ -741,7 +742,7 @@
 									
 								}
 							}
-							
+							$this->randomSleep();
 							//echo "SOY UN VIDEO:".$img."\n";
 							if($typeOfPost == "IGTV"){
 								$type = "video-igtv";
@@ -819,6 +820,7 @@
 					}else{
 						$this->storePostUnique($id, $bonk, $url, 1);
 					}
+					$this->randomSleep();
 				}
 			}
 			//exit;
@@ -826,7 +828,7 @@
 		}
 
 		function randomSleep(){
-			$int = rand(2, 5);
+			$int = rand(8, 10);
 			sleep($int);
 		}
 
