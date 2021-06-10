@@ -828,7 +828,7 @@
 		}
 
 		function randomSleep(){
-			$int = rand(8, 10);
+			$int = rand(2, 4);
 			sleep($int);
 		}
 
