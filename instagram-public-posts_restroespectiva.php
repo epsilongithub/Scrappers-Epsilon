@@ -1152,7 +1152,7 @@
 	*/
 	function createDatabase() {
 		//mb_internal_encoding('UTF-8');
-		$db = new mysqli('192.168.8.131', 'saio', 'eEp13Sa12cr', 'saio');
+		$db = new mysqli('192.168.7.131', 'saio', 'eEp13Sa12cr', 'saio');
 		if (mysqli_connect_errno()) {
 			printf("Connect failed: %s\n", mysqli_connect_error());
 			throw new Exception("Connection with database failed");
