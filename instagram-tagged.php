@@ -67,6 +67,7 @@
 	const TABLA_LOG = 'scrapper_ig_log_profiles';
 	const BAN_CLASS = 'vqibd  wNNoj ';
 	const SALIR_BAN = '_6vuJt';
+	const BAN_WAIT_CLASS = ' p-error dialog-404';
 
 
 
