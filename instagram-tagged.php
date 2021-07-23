@@ -52,9 +52,9 @@
 	const IS_VIDEO = 'HbPOm _9Ytll';
 	const LIKESVIDEO = 'vJRqr';
 	const CLOSE_LIKESVIDEO = 'QhbhU';
-	const IMGPOST = 'eLAPa _23QFA';
-	//const IMGPOST = 'eLAPa kPFhm';
-	const IMGPOST_CAR = 'eLAPa RzuR0';
+	// const IMGPOST = 'eLAPa _23QFA';
+	const IMGPOST = 'eLAPa RzuR0';
+	const IMGPOST_CAR = 'eLAPa vF75o';
 	const VIDEOPOSTOLD = 'tWeCl';
 	const VIDEOPOST = 'Q9bIO'; 
 
@@ -165,7 +165,6 @@
 
 			$var = true;
 			$varBaneado = 1;
-
 			$credenciales = $this->get_user();
 			$user = $credenciales["user"];
 			$passwd = $credenciales["password"];
@@ -195,7 +194,6 @@
 			while($var){
 				$contadorPerfilesMal = 0;
 				$urls = $this->getCompaniesUrls($id_maquina);
-
 				//SCRAP ALL THE PHOTOS IN THE FEEDS
 				foreach ($urls as $id => $urlindiv) {	
 
@@ -415,11 +413,12 @@
 
 			while($gotcha){
 				$sql = "select * from scrapper_users where en_uso = 0 and baneado = 0 and dormido = 0 order by fecha_ultima_actividad";
+				//$sql = "select * from scrapper_users where id = 56 order by fecha_ultima_actividad";
 				$queryResult = $this->db->query($sql);
 				if($queryResult->num_rows < 1){
 					echo "TODOS LOS USUARIOS ESTAN EN USO\n";
-					/*$sql = "select * from scrapper_users where baneado != 1 order by fecha_ultima_actividad";
-					$queryResult = $this->db->query($sql);*/
+					$sql = "select * from scrapper_users where baneado != 1 order by fecha_ultima_actividad";
+					$queryResult = $this->db->query($sql);
 					sleep(3600);
 
 
@@ -587,6 +586,9 @@
 			foreach ($posts2 as $posting) {
 
 				$urldelpost = $posting->findElement(WebDriverBy::xpath('.//a'))->getAttribute("href");
+				// echo "POSICION DE LA P ".strpos($urldelpost,"/p/");
+				//echo substr($urldelpost, 28,-1);
+				//echo "URL del POST --> $urldelpost \n";
 				if (!in_array($urldelpost, $urlpostarray)){
 					$urlpostarray[] = $urldelpost;
 				}else{
@@ -698,11 +700,12 @@
 					$pasodos = $pasouno->findElement(WebDriverBy::xpath('.//a'));	
 					$likes = $pasodos->findElement(WebDriverBy::xpath('.//span'))->getText();
 					if($typeOfPost == "photo"){
-						$imgdiv = $this->driver->findElement(WebDriverBy::cssSelector("div[class='".IMGPOST."']"));
-						$imgdiv2 = $imgdiv->findElement(WebDriverBy::xpath('.//div'));
-						$img = $imgdiv2->findElement(WebDriverBy::xpath('.//img'))->getAttribute("src");
+						$imgdiv = $this->driver->findElement(WebDriverBy::cssSelector("div[class='".IMGPOST_CAR."']"));
+						$imgdiv2 = $imgdiv->findElements(WebDriverBy::xpath('.//div'));
+						$img = $imgdiv2[0]->findElement(WebDriverBy::xpath('.//img'))->getAttribute("src");
 					}
-					//echo "TENIM IMG:".$img."\n";					
+					// echo "\n"."div[class='".IMGPOST."']"."\n";
+					// echo "TENIM IMG:".$img."\n";
 				} catch (Exception $e) {
 				}
 
@@ -711,8 +714,8 @@
 					$type = "carousel_album";
 					try {
 						$imgdiv = $this->driver->findElement(WebDriverBy::cssSelector("div[class='".IMGPOST_CAR."']"));
-						$imgdiv2 = $imgdiv->findElement(WebDriverBy::xpath('.//div'));
-						$img = $imgdiv2->findElement(WebDriverBy::xpath('.//img'))->getAttribute("src");
+						$imgdiv2 = $imgdiv->findElements(WebDriverBy::xpath('.//div'));
+						$img = $imgdiv2[0]->findElement(WebDriverBy::xpath('.//img'))->getAttribute("src");
 						//echo $img."\n";
 					}
 					catch (Exception $e) {
@@ -854,6 +857,9 @@
 						FROM scrapper_ig_mentions_cola where bloqueado != 1
 						ORDER BY orden LIMIT 0,".BLOQUE;
 
+			//$companiesWithPinterestQuery = "SELECT *
+			//			FROM scrapper_ig_mentions_cola where id_profile = 21887";
+
 			$queryResult = $this->db->query($companiesWithPinterestQuery);
 
 			$urls = array();
@@ -930,6 +936,29 @@
 			//$login2[1]->sendKeys(PASSWORD)->submit();
 
 			$this->randomSleep();
+		}
+
+		function guardarImagen($link_post,$url_imagen,$fecha){
+			$link_post = str_replace("https://www.instagram.com/p/","",$link_post);
+			$link_post = str_replace("/","",$link_post);
+
+			$filename = "Y:\\Instagram\\mentions\\".date("Ymd",strtotime($fecha));
+
+			if (file_exists($filename)) {
+				// echo "Existe ".$filename;
+			} 
+			else {
+				// echo "No existe, vamos a crearlo ".$filename;
+				mkdir($filename, 0777, true);
+			}     
+			file_put_contents($filename."\\".$link_post.".jpg", file_get_contents($url_imagen));
+
+			// echo "\n URL IMAGEN -->".$url_imagen."\n";
+			// echo "\n GUARDAMOS IMAGEN EN ".$filename."\\".$link_post. ".jpg \n";
+			$media_url = 'http://apis6.epsilontec.com/API_Facebookv11/mentions/'.date("Ymd",strtotime($fecha))."/".$link_post.".jpg";
+
+			return $media_url;
+
 		}
 
 		function syncBrandByContent(){
@@ -1091,7 +1120,13 @@
 				$likesFinales = $likesScrap;
 			}
 
-
+			$guardar_imagen = false;
+			$sql = "SELECT * from scrapper_ig_mentions_cola where id_profile = $id and orden < 11";
+			$datos = $this->db->query($sql);
+			if($datos->num_rows >= 1){
+				echo "Prioridad mas baja de 10 ".$datos->num_rows;
+				$guardar_imagen = true;
+			}
 			if($banderita == true){
 
 				if($num == 0){
@@ -1108,10 +1143,22 @@
 			}
 			else{
 
+				$link_imagen = $p->getImg();
+				if($guardar_imagen == true){
+					if($p->getTipo() == "photo" or $p->getTipo() == "carousel_album"){
+						echo "\nENTRAMOS A GUARDAR IMAGEN\n";
+						// echo "\n IMAGEN -----> ".$p->getImg();
+						// echo "\n LINK -----> ".$p->getLink();
+						$link_imagen = $this->guardarImagen($p->getLink(),$p->getImg(),$p->getFecha());
+						echo "LINK DE LA IMAGEN ---> $link_imagen \n";
+						echo "SALIMOS DE GUARDAR IMAGEN\n";
+					}
+				}
 				$insertQuery = "REPLACE INTO `scrapper_ig_mentions_contents` (`id_profile`, `pageName`, `createTime`, `message`, `link`, `likes`, `campo_8`, `campo_7`, `comments`, `id_externo`, `image`, `type`, `actualizacion`)
-														VALUES (".$id.", '".$url."', '".$p->getFecha()."', '".addslashes($p->getMsg())."', '".$p->getLink()."', ".$likesFinales.", ".$likesFinales.", ".$p->getNumViews().", ".$p->getNumComments().", '".$p->getIdExterno()."', '".$p->getImg()."', '".$p->getTipo()."', NOW())"; //(addslashes($p->getMsg()))
+														VALUES (".$id.", '".$url."', '".$p->getFecha()."', '".addslashes($p->getMsg())."', '".$p->getLink()."', ".$likesFinales.", ".$likesFinales.", ".$p->getNumViews().", ".$p->getNumComments().", '".$p->getIdExterno()."', '".$link_imagen."', '".$p->getTipo()."', NOW())"; //(addslashes($p->getMsg()))
 
 			}
+
 
 				echo 'INSERTANDO ', $p->getIdExterno(), "\n";
 				echo $insertQuery."\n";
